@@ -1,0 +1,50 @@
+{
+  "name": "private",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run serve",
+    "build": "npm run build-ts && npm run tslint",
+    "serve": "node example-webeasy/dist/index.js",
+    "watch-node": "nodemon example-webeasy/index.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "debug": "npm run build && npm run watch-debug",
+    "serve-debug": "nodemon --inspect example-webeasy/dist/index.js",
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\"",
+    "watch-ts": "npm run watch-ts --prefix webeasy/"
+  },
+  "dependencies": {
+    "async": "^2.6.0",
+    "bcrypt-nodejs": "^0.0.3",
+    "bluebird": "^3.5.1",
+    "errorhandler": "^1.5.0",
+    "lodash": "^4.17.4",
+    "request": "^2.83.0"
+  },
+  "devDependencies": {
+    "@types/async": "^2.0.45",
+    "@types/bcrypt-nodejs": "0.0.30",
+    "@types/bluebird": "^3.5.18",
+    "@types/errorhandler": "0.0.32",
+    "@types/jest": "^21.1.8",
+    "@types/lodash": "^4.14.91",
+    "@types/node": "^7.0.50",
+    "@types/request": "^2.0.9",
+    "@types/supertest": "^2.0.4",
+    "@types/shelljs": "^0.7.7",
+    "chai": "^4.1.2",
+    "concurrently": "^3.5.1",
+    "jest": "^21.2.1",
+    "node-sass": "^4.7.2",
+    "nodemon": "^1.13.0",
+    "shelljs": "^0.7.7",
+    "supertest": "^3.0.0",
+    "ts-jest": "^21.2.4",
+    "ts-node": "^4.0.2",
+    "tslint": "^5.8.0",
+    "typescript": "^2.7.1"
+  },
+  "author": "",
+  "license": "ISC"
+}

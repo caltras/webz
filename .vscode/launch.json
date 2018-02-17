@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Webeasy",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run-script",
+                "debug"
+            ],
+            "port": 9229,
+            "env": { "DEBUG": "*" }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch TS",
+            "sourceMaps": true,
+            "stopOnEntry": false,
+            "console": "internalConsole",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceRoot}/example-webeasy/src/index.ts",
+            "outFiles": ["${workspaceRoot}/example-webeasy/dist/*.js"]
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Process",
+            "port": 5858,
+            "outFiles": []
+        }
+
+    ]
+}
