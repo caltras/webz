@@ -1,8 +1,8 @@
 var http = require("http");
 
-import { ContentType } from '../helpers/controller.helper';
-//var Helper = require("../helpers/controller.helper");
-
+var Helper = require('../helpers/controller.helper');
+var Engine = require("../helpers/html.engine.helper");
+var Config = require('../config/index').Configuration;
 export class ReflectionDecorator{
     
     private static metadata:any = {};
@@ -12,6 +12,8 @@ export class ReflectionDecorator{
             ReflectionDecorator.metadata[key] = { class : target, decorator_params: parameters};
         }else{
             ReflectionDecorator.metadata[key].class.setPath(parameters);
+            ReflectionDecorator.metadata[key].class.setTemplate(target.template);
+            ReflectionDecorator.metadata[key].class.setConfiguration(target.config);
             ReflectionDecorator.metadata[key].decorator_params = parameters;
         }
     }
@@ -51,8 +53,8 @@ export class ReflectionDecorator{
 
 export function Controller(params:any){
     return function(target:any){
-        //target.prototype.path = params;
-        let instance = new target(params);
+        let instance = new target(params,Engine.HtmlEngineFactory.create(Config.getInstance().getConfig()));
+        instance.setConfiguration(Config.getInstance().getConfig());
         ReflectionDecorator.setMetadata(target.name,instance,params);
         return target;
     }
@@ -64,7 +66,15 @@ export function Get(params:any){
         var originalMethod = descriptor.value;
         descriptor.value = function(...args:any[]){
             let reflectionClass = ReflectionDecorator.getMetada(target.constructor.name);
-            let request_url = reflectionClass.class.getPath()+params;
+            let request_url = ""; 
+            let contentType = Helper.ContentType.HTML;
+            if(params instanceof String){
+                request_url = reflectionClass.class.getPath()+params;
+            }else{
+                request_url = reflectionClass.class.getPath()+params.url;
+                contentType = params.contentType || Helper.ContentType.HTML;
+            }
+
             let response = { end : (param:any)=>{}, writeHead: (...args:any[])=>{}};
             args.forEach((param, index)=>{
                 if(param instanceof http.IncomingMessage){
@@ -75,8 +85,8 @@ export function Get(params:any){
                 }
             });
             var result = originalMethod.apply(reflectionClass.class, args);
-            response.writeHead(200,{'Content-type': ContentType.APPLICATION_JSON});
-            response.end(JSON.stringify(result));
+            response.writeHead(200,{'Content-type': contentType});
+            response.end(Helper.parse(result,contentType));
             return result;
         }
         ReflectionDecorator.setMetadataMethod(target.constructor.name,new classConstructor(target.path),propertyKey,descriptor.value,params,"GET");

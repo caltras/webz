@@ -4,6 +4,7 @@ import * as ControllerHelper from './helpers/controller.helper';
 import * as debugModule from 'debug';
 import { IncomingMessage } from "http";
 import * as Lodash from 'lodash';
+import { Configuration } from './config/index';
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 const debug = debugModule('webeasy-bootstrap');
@@ -16,8 +17,8 @@ export class WebeasyBootStrap{
     constructor(cfg:any){
         this.urlParser = urlModule;
         this.servers = {};
-        let c = require('./config/index');
-        this.config = Lodash.defaultsDeep({},cfg,c.default);
+        Configuration.getInstance().getConfig().base_url = cfg.base_url;
+        this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
     }
 
     listen(name?:string,port?:any){
@@ -62,6 +63,8 @@ export class WebeasyBootStrap{
             await controllerHelper.callRoute(req,res);
 
         });
+
+        //socket.io
         return this;
     }
 

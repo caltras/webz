@@ -1,9 +1,10 @@
 import * as Handlebars from 'handlebars';
 import * as fs from 'fs';
+import * as Path from 'path';
 
 export abstract class HtmlEngineInterface {
     protected configuration:any;
-    abstract render(file:string,properties:any):string;
+    abstract render(path:string,file:string,properties:any):string;
 }
 export class HtmlEngineFactory{
     public static create(cfg:any){
@@ -21,9 +22,17 @@ export class HandlebarsEngine extends HtmlEngineInterface{
         super();
         this.configuration = cfg;
     }
-    render(file:string,properties:any):string{
-        let htmlFile = fs.readFileSync(file,"utf-8");
-        let template =  Handlebars.compile(htmlFile);
-        return template(properties);
+    render(path:string,file:string,properties:any):string{
+        try{
+            var url:string = Path.join(path,file);
+            if(!fs.existsSync(url)){
+                url = Path.join(__dirname,"../",file);
+            }
+            let htmlFile = fs.readFileSync(url,"utf-8");
+            let template =  Handlebars.compile(htmlFile);
+            return template(properties);
+        }catch(e){
+            return "Error "+e.message;
+        }
     }
 }

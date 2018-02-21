@@ -3,6 +3,12 @@ import { HtmlEngineFactory } from "./html.engine.helper";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
+export function parse(result:any,contentType:ContentType){
+    if(contentType=== ContentType.APPLICATION_JSON){
+        return JSON.stringify(result);
+    }
+    return result;
+}
 export enum ContentType{
     APPLICATION_JSON ="application/json",
     HTML="text/html"
@@ -51,8 +57,17 @@ export class ControllerHelper{
         let decorator:any = this.getDecorators(target);
         Object.keys(decorator.methods).forEach((k:any)=>{
             let method = decorator.methods[k];
-            console.log(decorator.decorator_params+method.decorator_params);
-            this.route[method.type.toUpperCase()][decorator.decorator_params+method.decorator_params] = {class: target.name, method: method.method};
+            let url = decorator.decorator_params;
+            if(typeof(url) !="string"){
+                url=url.url;
+            }
+            let methodParam = method.decorator_params;
+            if(typeof(methodParam) !="string"){
+                methodParam = methodParam.url;
+            }
+            url+=methodParam;
+            console.log(url);
+            this.route[method.type.toUpperCase()][url] = {class: target.name, method: method.method};
         });
     }
     private getDecorators(target:any){
@@ -87,7 +102,7 @@ export class ControllerHelper{
         }catch(e){
             resp.statusCode = 404;
             resp.writeHead(404,{'Content-type':ContentType.HTML});
-            resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url+"/"+this.cfg.error["404"],e));
+            resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
         }
 
     }
