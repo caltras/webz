@@ -109,7 +109,7 @@ export function Post(params:any){
                 request_url = reflectionClass.class.getPath()+params;
             }else{
                 request_url = reflectionClass.class.getPath()+params.url;
-                contentType = params.contentType || Helper.ContentType.HTML;
+                contentType = params.reponseContentType || Helper.ContentType.HTML;
             }
 
             let response = { end : (param:any)=>{}, writeHead: (...args:any[])=>{}};

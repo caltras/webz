@@ -11,11 +11,11 @@ class HomeController extends BaseController{
     public hello(request:IncomingMessage,response:ServerResponse){
         return this.render("home.html",{text:"Hello", url:this.path});
     }
-    @Get({ url: "/json", contentType : ContentType.APPLICATION_JSON} )
+    @Get({ url: "/json", reponseContentType : ContentType.APPLICATION_JSON} )
     public json(request:IncomingMessage,response:ServerResponse){
         return {text:"Hello", url:this.path};
     }
-    @Post({ url: "/", contentType : ContentType.APPLICATION_JSON})
+    @Post({ url: "/", reponseContentType : ContentType.APPLICATION_JSON})
     public save(request:IncomingMessage,response:ServerResponse, body:FormParameter){
         body.copyFiles(__dirname);       
         return body.getData();
