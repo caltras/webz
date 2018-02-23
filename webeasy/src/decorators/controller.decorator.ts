@@ -68,7 +68,7 @@ export function Get(params:any){
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
-        descriptor.value = function(...args:any[]){
+        descriptor.value = async function(...args:any[]){
             let reflectionClass = ReflectionDecorator.getMetada(target.constructor.name);
             let request_url = ""; 
             let contentType = Helper.ContentType.HTML;
@@ -76,19 +76,30 @@ export function Get(params:any){
                 request_url = reflectionClass.class.getPath()+params;
             }else{
                 request_url = reflectionClass.class.getPath()+params.url;
-                contentType = params.contentType || Helper.ContentType.HTML;
+                contentType = params.responseContentType || Helper.ContentType.HTML;
             }
-
+            let request = new http.IncomingMessage();
+            let body:any;
             let response = { end : (param:any)=>{}, writeHead: (...args:any[])=>{}};
             args.forEach((param, index)=>{
                 if(param instanceof http.IncomingMessage){
                     param.request_url = request_url;
+                    request = param;
                 } 
                 if(param instanceof http.ServerResponse){
                     response = param;
                 }
+                if(param instanceof BodyParameter){
+                    body = param;
+                }
             });
-            var result = originalMethod.apply(reflectionClass.class, args);
+            body = await BodyParser.parse(request);
+            
+            let newArguments:any[] =[];
+            newArguments = newArguments.concat(args);
+            newArguments.push(body);
+
+            var result = originalMethod.apply(reflectionClass.class, newArguments);
             response.writeHead(200,{'Content-type': contentType});
             response.end(Helper.parse(result,contentType));
             return result;
@@ -97,7 +108,7 @@ export function Get(params:any){
         return descriptor;        
     }
 };
-export function Post(params:any){
+export function Delete(params:any){
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
@@ -109,7 +120,51 @@ export function Post(params:any){
                 request_url = reflectionClass.class.getPath()+params;
             }else{
                 request_url = reflectionClass.class.getPath()+params.url;
-                contentType = params.reponseContentType || Helper.ContentType.HTML;
+                contentType = params.responseContentType || Helper.ContentType.HTML;
+            }
+            let request = new http.IncomingMessage();
+            let body:any;
+            let response = { end : (param:any)=>{}, writeHead: (...args:any[])=>{}};
+            args.forEach((param, index)=>{
+                if(param instanceof http.IncomingMessage){
+                    param.request_url = request_url;
+                    request = param;
+                } 
+                if(param instanceof http.ServerResponse){
+                    response = param;
+                }
+                if(param instanceof BodyParameter){
+                    body = param;
+                }
+            });
+            body = await BodyParser.parse(request);
+            
+            let newArguments:any[] =[];
+            newArguments = newArguments.concat(args);
+            newArguments.push(body);
+
+            var result = originalMethod.apply(reflectionClass.class, newArguments);
+            response.writeHead(200,{'Content-type': contentType});
+            response.end(Helper.parse(result,contentType));
+            return result;
+        }
+        ReflectionDecorator.setMetadataMethod(target.constructor.name,new classConstructor(target.path),propertyKey,descriptor.value,params,"DELETE");
+        return descriptor;        
+    }
+};
+var processRequestPostPut = function(params:any, type:string){
+    return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
+        var classConstructor = target.constructor;
+        var originalMethod = descriptor.value;
+        descriptor.value = async function(...args:any[]){
+            let reflectionClass = ReflectionDecorator.getMetada(target.constructor.name);
+            let request_url = ""; 
+            let contentType = Helper.ContentType.HTML;
+            if(params instanceof String){
+                request_url = reflectionClass.class.getPath()+params;
+            }else{
+                request_url = reflectionClass.class.getPath()+params.url;
+                contentType = params.responseContentType || Helper.ContentType.HTML;
             }
 
             let response = { end : (param:any)=>{}, writeHead: (...args:any[])=>{}};
@@ -139,7 +194,14 @@ export function Post(params:any){
             
             return;
         }
-        ReflectionDecorator.setMetadataMethod(target.constructor.name,new classConstructor(target.path),propertyKey,descriptor.value,params,"POST");
+        ReflectionDecorator.setMetadataMethod(target.constructor.name,new classConstructor(target.path),propertyKey,descriptor.value,params,type);
         return descriptor;        
-    }
+    };
+}
+export function Post(params:any){
+    return processRequestPostPut(params,"POST");
+};
+
+export function Put(params:any){
+    return processRequestPostPut(params,"PUT");
 };

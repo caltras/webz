@@ -18,7 +18,7 @@ export class ControllerHelper{
     private registeredUrls:any;
     private ready:boolean;
     static instance:ControllerHelper;
-    private route:any = { "GET":{}, "POST":{}};
+    private route:any = { "GET":{}, "POST":{}, "PUT":{}, "DELETE":{}, "OPTION":{}, "HEAD":{}};
     private cfg:any;
     
 
@@ -66,7 +66,7 @@ export class ControllerHelper{
                 methodParam = methodParam.url;
             }
             url+=methodParam;
-            console.log(url);
+            url = url.replace("//","/");
             this.route[method.type.toUpperCase()][url] = {class: target.name, method: method.method};
         });
     }

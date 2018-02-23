@@ -23,6 +23,9 @@ export class FormParameter extends BodyParameter{
         return this.files;
     }
     copyFiles(path:string){
+        if(!fs.existsSync(path)){
+            fs.mkdirSync(path);
+        }
         this.files.forEach((file)=>{
             if(fs.existsSync(file.path)){
                 fs.copyFileSync(file.path,path+"/"+file.name);

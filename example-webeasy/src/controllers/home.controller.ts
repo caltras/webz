@@ -1,23 +1,36 @@
 import { BaseController, BodyParameter, FormParameter } from "webeasy/controller";
 import { ContentType } from "webeasy/helpers/controller.helper";
-import { Controller, Get, Post } from 'webeasy/decorators';
+import { Controller, Get, Post, Put, Delete, Inject } from 'webeasy/decorators';
 import { IncomingMessage, ServerResponse, ServerRequest } from 'http';
 import * as fs from 'fs';
+import * as Path from 'path';
 
-@Controller("/home")
+@Controller("/")
 class HomeController extends BaseController{
+
+    @Inject() 
+    public test:string;
 
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
         return this.render("home.html",{text:"Hello", url:this.path});
     }
-    @Get({ url: "/json", reponseContentType : ContentType.APPLICATION_JSON} )
+    @Get({ url: "/json", responseContentType : ContentType.APPLICATION_JSON} )
     public json(request:IncomingMessage,response:ServerResponse){
         return {text:"Hello", url:this.path};
     }
-    @Post({ url: "/", reponseContentType : ContentType.APPLICATION_JSON})
+    @Post({ url: "/", responseContentType : ContentType.APPLICATION_JSON})
     public save(request:IncomingMessage,response:ServerResponse, body:FormParameter){
-        body.copyFiles(__dirname);       
+        body.copyFiles(Path.join(__dirname,"../upload"));       
+        return body.getData();
+    }
+    @Put({ url: "/", responseContentType : ContentType.APPLICATION_JSON})
+    public update(request:IncomingMessage,response:ServerResponse, body:FormParameter){
+        body.copyFiles(Path.join(__dirname,"../upload"));       
+        return body.getData();
+    }
+    @Delete({ url: "/", responseContentType : ContentType.APPLICATION_JSON})
+    public delete(request:IncomingMessage,response:ServerResponse, body:BodyParameter){
         return body.getData();
     }
 }
