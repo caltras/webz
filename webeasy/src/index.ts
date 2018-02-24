@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import * as http from "http";
 import * as urlModule from "url";
 import * as ControllerHelper from './helpers/controller.helper';

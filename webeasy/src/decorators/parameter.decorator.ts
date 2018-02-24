@@ -1,12 +1,20 @@
-var ReflectionDecorator = require('./controller.decorator').ReflectionDecorator;
-export function Inject(params?:any){
+var SINGLETON_CLASS = require("./controller.decorator").SINGLETON_CLASS;
+var CONTROLLER_KEY = require("./controller.decorator").CONTROLLER_KEY;
+
+export const Inject =(params?:any)=>{
     return function(target:any, key:string){
-        //console.log("Inject");
-        //console.log(target, key);
-        //var classConstructor = target.constructor;
-        //ReflectionDecorator.setMetadataMethod(target.constructor.name,new classConstructor(target.path),key,key,params,"INJECT");
-        //let reflectionClass = ReflectionDecorator.getMetada(target.constructor.name);
-        //console.log(reflectionClass);
+        let val = target.constructor[key];
+        let type = Reflect.getMetadata("design:type",target,key);
+        console.log(type);
+        function get() { return new type(); }
+        function set(value:any) { 
+            val = value;
+        }
+        Reflect.deleteProperty(target,key);
+        Reflect.defineProperty(target,key,{
+            get: get,
+            set: set
+        });
         return target;
     }
 }

@@ -30,7 +30,9 @@ class JSONParser implements Parser{
                 body+=chunk;
             });
             request.on('end',()=>{
-                parameter.setData(JSON.parse(body));
+                if(body){
+                    parameter.setData(JSON.parse(body));
+                }
                 resolve(parameter);
             });
         });
