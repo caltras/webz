@@ -9,7 +9,7 @@ import * as Path from 'path';
 @Controller("/")
 class HomeController extends BaseController{
 
-    @Inject() public test:Service;
+    @Inject() public service:Service;
 
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
@@ -17,8 +17,8 @@ class HomeController extends BaseController{
     }
     @Get({ url: "/json", responseContentType : ContentType.APPLICATION_JSON} )
     public json(request:IncomingMessage,response:ServerResponse){
-        this.test = "Novo valor";
-        return {text:"Hello",test:this.test, url:this.path};
+        let r = this.service.execute();
+        return {text:"Hello",response:r, url:this.path};
     }
     @Post({ url: "/", responseContentType : ContentType.APPLICATION_JSON})
     public save(request:IncomingMessage,response:ServerResponse, body:FormParameter){
