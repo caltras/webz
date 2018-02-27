@@ -6,4 +6,5 @@ export function Singleton(target:any){
         }
         return target.instance;
     };
+    return target;
 }

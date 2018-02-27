@@ -45,24 +45,29 @@ export class WebeasyBootStrap{
     addFilters(){
 
     }
-    create(name?:string){
+    async create(name?:string){
         let exists = !!this.servers.hasOwnProperty(name);
         if(name && exists){ 
             debug("Server already exists");
             throw "Server already exists";
         }
         name = name || "default";
+        await controllerHelper.load(this.config);
+        //CORS
+        //FILTERS
+        //AUTHENTICATION
+        //URL-PARSER
+        //REQUEST-PARSER
+        //ACTIONS/CONTROLLERS
+        let stack:any[] = [];
+        if(controllerHelper.hasFilters()){
+            stack.push({class: controllerHelper, mehtod: controllerHelper.doFilter});
+        }
+        stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
         this.servers[name] = http.createServer(async (req,res)=>{
-            //CORS
-            //FILTERS
-            //AUTHENTICATION
-            //URL-PARSER
-            //REQUEST-PARSER
-            //ACTIONS/CONTROLLERS
-            
-            await controllerHelper.load(this.config,req, res);
-            await controllerHelper.callRoute(req,res);
-
+            stack.forEach(async s=>{
+                await s.method.call(s.class,req,res);
+            });
         });
 
         //socket.io

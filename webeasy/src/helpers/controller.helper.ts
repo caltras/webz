@@ -20,7 +20,7 @@ export class ControllerHelper{
     static instance:ControllerHelper;
     private route:any = { "GET":{}, "POST":{}, "PUT":{}, "DELETE":{}, "OPTION":{}, "HEAD":{}};
     private cfg:any;
-    
+    private filters:any[] = [];
 
     constructor(){
         this.registeredUrls = {};
@@ -39,7 +39,7 @@ export class ControllerHelper{
     private getListFileController(cfg:any):string[]{
         return _.flatMapDeep(this.walkSync(cfg.base_url+"/"+cfg.controllers, []));
     }
-    public async load(cfg:any,req:any,resp:any){
+    public async load(cfg:any){
         ControllerHelper.instance.cfg = cfg;
 
         let controllers:string[] = this.getListFileController(cfg);
@@ -129,6 +129,21 @@ export class ControllerHelper{
             resp.writeHead(404,{'Content-type':ContentType.HTML});
             resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
         }
-
+    }
+    get filter(){
+        return this.filters;
+    }
+    hasFilters():boolean{
+        return this.filters.length>0;
+    }
+    public addFilter(filter:any|any[]){
+        if(filter instanceof Array){
+            this.filters = this.filters.concat(filter);
+        }else{
+            this.filters.push(filter);
+        }
+    }
+    public async doFilter(req:any,resp:any){
+        console.log("call filters")
     }
 }
