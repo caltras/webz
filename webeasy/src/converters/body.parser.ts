@@ -68,7 +68,11 @@ export class BodyParser{
         let headers = request.headers;
         
         if(!headers["content-type"] || headers["content-type"].indexOf("text/plain") > -1){
-            return await bodyParser.convertToText(request);
+            if(request.headers["content-length"]){
+                return await bodyParser.convertToText(request);
+            }else{
+                return null;
+            }
         }
         if(headers["content-type"].indexOf("application/json")>-1){
             return await bodyParser.convertToJSON(request);

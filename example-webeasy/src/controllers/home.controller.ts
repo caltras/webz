@@ -13,6 +13,10 @@ class HomeController extends BaseController{
 
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
+        return "Hello World";
+    }
+    @Get({ url: "/html"})
+    public html(request:IncomingMessage,response:ServerResponse){
         return this.render("home.html",{text:"Hello", url:this.path});
     }
     @Get({ url: "/json", responseContentType : ContentType.APPLICATION_JSON} )

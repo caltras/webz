@@ -28,7 +28,7 @@ export class BaseController{
     getConfiguration():any{
         return this.config;
     }
-    public render(file:string,data?:any):string{
+    render(file:string,data?:any):string{
         return this.template.render(Path.join(this.config.base_url,this.config.view.base),file,data);
     }
 }

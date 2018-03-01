@@ -12,10 +12,12 @@
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "nodemon --inspect example-webeasy/dist/index.js",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\"",
-    "watch-ts": "npm run watch-ts --prefix webeasy/"
+    "watch-ts": "npm run watch-ts --prefix webeasy/",
+    "load-test": "node autocannon-load-test.js"
   },
   "dependencies": {
     "async": "^2.6.0",
+    "autocannon": "^2.0.0",
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.1",
     "errorhandler": "^1.5.0",

@@ -6,8 +6,11 @@ import * as debugModule from 'debug';
 import { IncomingMessage } from "http";
 import * as Lodash from 'lodash';
 import { Configuration } from './config/index';
+import { HtmlEngineFactory } from "./helpers/html.engine.helper";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
+var HelperUtils = ControllerHelper.HelperUtils;
+
 const debug = debugModule('webeasy-bootstrap');
 export class WebeasyBootStrap{
     
@@ -45,6 +48,13 @@ export class WebeasyBootStrap{
     addFilters(){
 
     }
+    loadTemplates(cfg:any){
+        let files:string[] = HelperUtils.walkSync(this.config.base_url+"/"+this.config.view.base,[]);
+        let engine = HtmlEngineFactory.create(cfg);
+        Lodash.each(Lodash.flatMapDeep(files),(file)=>{
+            engine.compile(file);
+        });
+    }
     async create(name?:string){
         let exists = !!this.servers.hasOwnProperty(name);
         if(name && exists){ 
@@ -53,6 +63,7 @@ export class WebeasyBootStrap{
         }
         name = name || "default";
         await controllerHelper.load(this.config);
+        this.loadTemplates(this.config);
         //CORS
         //FILTERS
         //AUTHENTICATION
@@ -64,9 +75,9 @@ export class WebeasyBootStrap{
             stack.push({class: controllerHelper, mehtod: controllerHelper.doFilter});
         }
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
-        this.servers[name] = http.createServer(async (req,res)=>{
-            stack.forEach(async s=>{
-                await s.method.call(s.class,req,res);
+        this.servers[name] = http.createServer((req,res)=>{
+            stack.forEach(s=>{
+                s.method.call(s.class,req,res);
             });
         });
 

@@ -35,11 +35,13 @@ var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
-        descriptor.value = async function(...args:any[]){
-            let path = Reflect.getMetadata(CONTROLLER_KEY,target.constructor);
-            let methodParams = Reflect.getMetadata(type,target.constructor,propertyKey);
-
+        descriptor.value = function(args:any){
+            
             let reflectionClass = Reflect.getMetadata(SINGLETON_CLASS,target.constructor);
+            let methodParams:any = Reflect.getMetadata(type,target.constructor,propertyKey);
+            
+            let path = reflectionClass.getPath();
+            
             let request_url = ""; 
             let contentType = Helper.ContentType.HTML;
             if(methodParams instanceof String){
@@ -48,36 +50,46 @@ var processRequest = (params:any,type:any)=>{
                 request_url = path+ (methodParams.url || "");
                 contentType = methodParams.responseContentType || Helper.ContentType.HTML;
             }
-            let request = new http.IncomingMessage();
-            let response = new http.ServerResponse(request);
+            let request = args.request;
+            let response = args.response;
             let body:any;
-            args.forEach((param, index)=>{
-                if(param instanceof http.IncomingMessage){
-                    param.request_url = request_url;
-                    request = param;
-                } 
-                if(param instanceof http.ServerResponse){
-                    response = param;
-                }
-                if(param instanceof BodyParameter){
-                    body = param;
-                }
-            });
-            body = await BodyParser.parse(request);
-            
-            let newArguments:any[] =[];
-            newArguments = newArguments.concat(args);
-            newArguments.push(body);
+            /**
+             * ---------------------------------------------
+             * BodyParser | Original method | result (Avg)  |
+             * ----------------------------------------------
+             *      0     |     0           | (GET) 33k RPS |
+             * ----------------------------------------------
+             *      1     |     0           | (GET) 31k RPS |
+             * ----------------------------------------------
+             *      0     |     1           | (GET) 4.5k RPS|
+             * ----------------------------------------------
+             *      1     |     1           | (GET) 4k RPS  |
+             * ----------------------------------------------
+             */
 
-            var result = originalMethod.apply(reflectionClass, newArguments);
-            if(type!==CONNECT_KEY && type!==HEAD_KEY && type!==PATCH_KEY){
-                response.writeHead(200,{'Content-type': contentType});
-                response.end(Helper.parse(result,contentType));
-            }else{
-                response.writeHead(200);
-                response.end();
-            }
-            return result;
+            return new Promise((resolve, reject)=>{
+                let newArguments:any[] =[];
+                newArguments = newArguments.concat([args.req,args.resp]);
+
+                //TODO: Improve performance
+                if(request.headers["content-length"]){
+                    body = BodyParser.parse(request);
+                    newArguments.push(body);
+                }
+                
+                //TODO: Improve performance
+                var result = originalMethod.call(reflectionClass, newArguments);
+
+                if(type!==CONNECT_KEY && type!==HEAD_KEY && type!==PATCH_KEY){
+                    response.writeHead(200,{'Content-type': contentType});
+                    response.end(Helper.parse(result,contentType));
+                    response.end(result);
+                }else{
+                    response.writeHead(200);
+                    response.end();
+                }
+                resolve();
+            });
         }
         Reflect.defineMetadata(type,params,classConstructor,propertyKey);
         return descriptor;        

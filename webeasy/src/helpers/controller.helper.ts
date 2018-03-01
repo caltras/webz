@@ -3,6 +3,7 @@ import { HtmlEngineFactory } from "./html.engine.helper";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
+import { MethodWrapper } from './method.wrapper';
 export function parse(result:any,contentType:ContentType){
     if(contentType=== ContentType.APPLICATION_JSON){
         return JSON.stringify(result);
@@ -12,6 +13,20 @@ export function parse(result:any,contentType:ContentType){
 export enum ContentType{
     APPLICATION_JSON ="application/json",
     HTML="text/html"
+}
+export class HelperUtils{
+    public static walkSync(dir:any, filelist:any = []):any{
+        return fs.readdirSync(dir)
+            .filter(file => file.indexOf(".map") === -1 && file.indexOf(".d.ts") === -1)
+            .map(file => {
+                return fs.statSync(path.join(dir, file)).isDirectory()
+                        ? HelperUtils.walkSync(path.join(dir, file), filelist)
+                        : filelist.concat(path.join(dir, file))[0]
+                });
+    }
+    public static getListFileController(cfg:any):string[]{
+        return _.flatMapDeep(HelperUtils.walkSync(cfg.base_url+"/"+cfg.controllers, []));
+    }
 }
 export class ControllerHelper{
     private registeredClass:any;
@@ -26,23 +41,11 @@ export class ControllerHelper{
         this.registeredUrls = {};
         this.registeredClass={};
     }
-
-    private walkSync(dir:any, filelist:any = []):any{
-        return fs.readdirSync(dir)
-            .filter(file => file.indexOf(".map") === -1 && file.indexOf(".d.ts") === -1)
-            .map(file => {
-                return fs.statSync(path.join(dir, file)).isDirectory()
-                        ? this.walkSync(path.join(dir, file), filelist)
-                        : filelist.concat(path.join(dir, file))[0]
-                });
-    }
-    private getListFileController(cfg:any):string[]{
-        return _.flatMapDeep(this.walkSync(cfg.base_url+"/"+cfg.controllers, []));
-    }
+    
     public async load(cfg:any){
         ControllerHelper.instance.cfg = cfg;
 
-        let controllers:string[] = this.getListFileController(cfg);
+        let controllers:string[] = HelperUtils.getListFileController(cfg);
         controllers.forEach(async (path)=>{
             var name_path:string = _.findLast(path.split("/")).replace(/(\.js|\.ts)/,"");
             if(!this.isReady() || !this.registeredClass.hasOwnProperty(name_path)){
@@ -111,24 +114,27 @@ export class ControllerHelper{
     public setReady(is:boolean){
         this.ready = is;
     }
-    public async callRoute(req:any,resp:any){
-        try{
-            if(!Object.keys(this.route[req.method]).length){
-                throw Error(`Page not found - ${req.method} - ${req.url}`);
-            }else{
-                if(!this.route[req.method].hasOwnProperty(req.url)){
+    public callRoute(req:any,resp:any){
+        new Promise((resolve,reject)=>{
+            try{
+                if(!Object.keys(this.route[req.method]).length){
                     throw Error(`Page not found - ${req.method} - ${req.url}`);
                 }else{
-                    let controller = this.route[req.method][req.url];
-                    let instanceClazz = Reflect.getMetadata(SINGLETON_CLASS,controller.target);
-                    instanceClazz[controller.name].call(instanceClazz,req,resp);
+                    if(!this.route[req.method].hasOwnProperty(req.url)){
+                        throw Error(`Page not found - ${req.method} - ${req.url}`);
+                    }else{
+                        let controller = this.route[req.method][req.url];                     
+                        let param = new MethodWrapper(controller.target,req,resp);
+                        controller.method.call(controller.target,param);
+                    }
                 }
+            }catch(e){
+                resp.statusCode = 404;
+                resp.writeHead(404,{'Content-type':ContentType.HTML});
+                resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
             }
-        }catch(e){
-            resp.statusCode = 404;
-            resp.writeHead(404,{'Content-type':ContentType.HTML});
-            resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
-        }
+            resolve();
+        });
     }
     get filter(){
         return this.filters;
