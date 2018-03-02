@@ -12,7 +12,40 @@ export function parse(result:any,contentType:ContentType){
 }
 export enum ContentType{
     APPLICATION_JSON ="application/json",
-    HTML="text/html"
+    APPLICATION_JAVASCRIPT="application/javascript",
+    APPLICATION_OCTET_STREAM="application/octet-stream",
+    APPLICATION_OGG="application/ogg",
+    APPLICATION_PDF="application/pdf",
+    APPLICATION_XHTML="application/xhtml+xml",
+    APPLICATION_XML="application/xml",
+    APPLICATION_ZIP="application/zip",
+    
+    AUDIO_MPEG="audio/mpeg",
+    AUDIO_WMA="audio/x-ms-wma",
+    AUDIO_REALAUDIO="audio/vnd.rn-realaudio",
+    AUDIO_WAV="audio/x-wav",
+
+    IMAGE_GIF="image/gif",
+    IMAGE_JPEG="image/jpeg",
+    IMAGE_PNG="image/png",
+    IMAGE_TIFF="image/tiff",
+    IMAGE__ICON="image/x-icon",
+    IMAGE_SVG="image/svg+xml",
+
+    MULTIPART_MIXED="multipart/mixed",
+
+    TEXT_CSS="text/css",
+    TEXT_CSV="text/csv",
+    TEXT_XML="text/xml",
+    HTML="text/html",
+    TEXT_PLAIN="text/plain",
+
+    VIDEO_MPEG="video/mpeg",
+    VIDEO_MP4="video/mp4",
+    VIDEO_QUICKTIME="video/quicktime",
+    VIDEO_WMV="video/x-ms-wmv",
+    VIDEO_WEBM="video/webm"
+    
 }
 export class HelperUtils{
     public static walkSync(dir:any, filelist:any = []):any{
@@ -83,7 +116,7 @@ export class ControllerHelper{
                 let methods:any = Reflect.getMetadata(type.key,target,prop);
                 if(methods){
                     removeFns.push(prop);
-                    let url = methods.url;
+                    let url = methods;
                     if(typeof(url) !="string"){
                         url=url.url;
                     }

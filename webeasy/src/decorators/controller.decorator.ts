@@ -44,11 +44,15 @@ var processRequest = (params:any,type:any)=>{
             
             let request_url = ""; 
             let contentType = Helper.ContentType.HTML;
+            let async:boolean = false;
             if(methodParams instanceof String){
                 request_url = path+methodParams;
             }else{
                 request_url = path+ (methodParams.url || "");
                 contentType = methodParams.responseContentType || Helper.ContentType.HTML;
+                if(methodParams.hasOwnProperty("async")){
+                    async = methodParams.async;
+                }
             }
             let request = args.request;
             let response = args.response;
@@ -61,41 +65,99 @@ var processRequest = (params:any,type:any)=>{
              * ----------------------------------------------
              *      1     |     0           | (GET) 31k RPS |
              * ----------------------------------------------
-             *      0     |     1           | (GET) 4.5k RPS|
+             *      0     |     1           | (GET) 24k RPS|
              * ----------------------------------------------
-             *      1     |     1           | (GET) 4k RPS  |
+             *      1     |     1           | (GET) 20k RPS  |
              * ----------------------------------------------
              */
-
-            return new Promise((resolve, reject)=>{
-                let newArguments:any[] =[];
-                newArguments = newArguments.concat([args.req,args.resp]);
-
-                //TODO: Improve performance
-                if(request.headers["content-length"]){
-                    body = BodyParser.parse(request);
-                    newArguments.push(body);
-                }
-                
-                //TODO: Improve performance
-                var result = originalMethod.call(reflectionClass, newArguments);
-
-                if(type!==CONNECT_KEY && type!==HEAD_KEY && type!==PATCH_KEY){
-                    response.writeHead(200,{'Content-type': contentType});
-                    response.end(Helper.parse(result,contentType));
-                    response.end(result);
-                }else{
-                    response.writeHead(200);
-                    response.end();
-                }
-                resolve();
-            });
+            if(type === GET_KEY){
+                return processGet(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
+            }else{
+                return process(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
+            }
         }
         Reflect.defineMetadata(type,params,classConstructor,propertyKey);
         return descriptor;        
     };
 };
+/* 
+Due to performance
+*/
+function processGet(request:any,response:any,args:any,type:string, contentType:any,body:any,originalMethod:any,reflectionClass:any,async:boolean){
+    return new Promise((resolve, reject)=>{
+        try{
+            let newArguments:any[] =[];
+            newArguments = newArguments.concat([args.req,args.resp]);
 
+            if(request.headers["content-length"]){
+                body = BodyParser.parse(request);
+                newArguments.push(body);
+            }
+            if(async){
+                let promise = originalMethod.apply(reflectionClass, newArguments);
+                if(promise instanceof Promise){
+                    promise.then((result:any)=>{
+                            processResponse(result,response,type,contentType);
+                            resolve();
+                        }).catch((error:any)=>{
+                            reject(error);
+                        }); 
+                }else{
+                    processResponse(promise,response,type,contentType);
+                    resolve();
+                }
+            }else{
+                let result = originalMethod.apply(reflectionClass, newArguments);
+                processResponse(result,response,type,contentType);
+                resolve();
+            }
+        }catch(e){
+            reject(e);
+        }
+    });
+}
+function process(request:any,response:any,args:any,type:string, contentType:any,body:any,originalMethod:any,reflectionClass:any,async:boolean){
+    return new Promise(async (resolve, reject)=>{
+        try{
+            let newArguments:any[] =[];
+            newArguments = newArguments.concat([args.req,args.resp]);
+
+            if(request.headers["content-length"]){
+                body = await BodyParser.parse(request);
+                newArguments.push(body);
+            }
+            if(async){
+                let promise = originalMethod.apply(reflectionClass, newArguments);
+                if(promise instanceof Promise){
+                    promise.then((result:any)=>{
+                            processResponse(result,response,type,contentType);
+                            resolve();
+                        }).catch((error:any)=>{
+                            reject(error);
+                        }); 
+                }else{
+                    processResponse(promise,response,type,contentType);
+                    resolve();
+                }
+            }else{
+                let result = originalMethod.apply(reflectionClass, newArguments);
+                processResponse(result,response,type,contentType);
+                resolve();
+            }
+        }catch(e){
+            reject(e);
+        }
+    });
+};
+function processResponse(result:any,response:any,type:string,contentType:any){
+    if([CONNECT_KEY,HEAD_KEY,PATCH_KEY].indexOf(type)===-1){
+        response.writeHead(200,{'Content-type': contentType});
+        response.end(Helper.parse(result,contentType));
+    }else{
+        response.writeHead(200);
+        response.end();
+    }
+};
 
 export function Get(params:any){
     return processRequest(params,GET_KEY);
