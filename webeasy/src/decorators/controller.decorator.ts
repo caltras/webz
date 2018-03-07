@@ -90,6 +90,7 @@ function processGet(request:any,response:any,args:any,type:string, contentType:a
             newArguments = newArguments.concat([args.req,args.resp]);
 
             if(request.headers["content-length"]){
+                //the difference
                 body = BodyParser.parse(request);
                 newArguments.push(body);
             }
@@ -123,6 +124,7 @@ function process(request:any,response:any,args:any,type:string, contentType:any,
             newArguments = newArguments.concat([args.req,args.resp]);
 
             if(request.headers["content-length"]){
+                //the difference
                 body = await BodyParser.parse(request);
                 newArguments.push(body);
             }
