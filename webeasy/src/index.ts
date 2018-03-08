@@ -7,9 +7,12 @@ import { IncomingMessage } from "http";
 import * as Lodash from 'lodash';
 import { Configuration } from './config/index';
 import { HtmlEngineFactory } from "./helpers/html.engine.helper";
+import { FilterHelper } from './helpers/filter.helper';
+import * as Path from 'path';
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
+var filterHelper = FilterHelper.getInstance();
 
 const debug = debugModule('webeasy-bootstrap');
 export class WebeasyBootStrap{
@@ -22,6 +25,13 @@ export class WebeasyBootStrap{
         this.urlParser = urlModule;
         this.servers = {};
         Configuration.getInstance().getConfig().base_url = cfg.base_url;
+        cfg.filters = cfg.filters || [];
+        cfg.filters = Lodash.map(cfg.filters,(f:string)=>{
+            return Path.join(cfg.base_url,f);
+        });
+        cfg.filters = Lodash.map(Configuration.getInstance().getConfig().filters,(f:string)=>{
+            return Path.join(__dirname,f);
+        }).concat(cfg.filters);
         this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
     }
 
@@ -45,12 +55,15 @@ export class WebeasyBootStrap{
         return this;
         
     }
-    addFilters(){
-
+    addFilters(any:string[]){
+        
     }
-    loadTemplates(cfg:any){
+    loadFilters(){     
+        filterHelper.load(this.config.filters);
+    }
+    loadTemplates(){
         let files:string[] = HelperUtils.walkSync(this.config.base_url+"/"+this.config.view.base,[]);
-        let engine = HtmlEngineFactory.create(cfg);
+        let engine = HtmlEngineFactory.create(this.config);
         Lodash.each(Lodash.flatMapDeep(files),(file)=>{
             engine.compile(file);
         });
@@ -63,7 +76,8 @@ export class WebeasyBootStrap{
         }
         name = name || "default";
         await controllerHelper.load(this.config);
-        this.loadTemplates(this.config);
+        this.loadFilters();
+        this.loadTemplates();
         //CORS
         //FILTERS
         //AUTHENTICATION
@@ -71,13 +85,16 @@ export class WebeasyBootStrap{
         //REQUEST-PARSER
         //ACTIONS/CONTROLLERS
         let stack:any[] = [];
-        if(controllerHelper.hasFilters()){
-            stack.push({class: controllerHelper, mehtod: controllerHelper.doFilter});
+        if(filterHelper.hasFilters()){
+            stack.push({class: filterHelper, method: filterHelper.doFilter});
         }
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
         this.servers[name] = http.createServer((req,res)=>{
             stack.forEach(s=>{
-                s.method.call(s.class,req,res);
+                if(!res.finished){
+                    s.method.call(s.class,req,res);
+                }
+                
             });
         });
 

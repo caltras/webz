@@ -68,7 +68,6 @@ export class ControllerHelper{
     static instance:ControllerHelper;
     private route:any = { "GET":{}, "POST":{}, "PUT":{}, "DELETE":{}, "OPTION":{}, "HEAD":{}};
     private cfg:any;
-    private filters:any[] = [];
 
     constructor(){
         this.registeredUrls = {};
@@ -168,21 +167,5 @@ export class ControllerHelper{
             }
             resolve();
         });
-    }
-    get filter(){
-        return this.filters;
-    }
-    hasFilters():boolean{
-        return this.filters.length>0;
-    }
-    public addFilter(filter:any|any[]){
-        if(filter instanceof Array){
-            this.filters = this.filters.concat(filter);
-        }else{
-            this.filters.push(filter);
-        }
-    }
-    public async doFilter(req:any,resp:any){
-        console.log("call filters")
     }
 }

@@ -4,6 +4,9 @@ var config = {
     port: 3000,
     base_url:'../',
     controllers: 'controllers',
+    filters: [
+        'filters/security.filter'
+    ],
     view:{
         engine: 'handlebars',
         base:"view"

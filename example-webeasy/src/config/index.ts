@@ -2,6 +2,9 @@
 export default {
     port:3002,
     base_url: "",
+    filters:[
+        'filters/test.filter'
+    ],
     view: {
         engine: 'handlebars',
         base:"view"
