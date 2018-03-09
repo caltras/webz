@@ -35,55 +35,131 @@ var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
-        descriptor.value = async function(...args:any[]){
-            let path = Reflect.getMetadata(CONTROLLER_KEY,target.constructor);
-            let methodParams = Reflect.getMetadata(type,target.constructor,propertyKey);
-
+        descriptor.value = function(args:any){
+            
             let reflectionClass = Reflect.getMetadata(SINGLETON_CLASS,target.constructor);
+            let methodParams:any = Reflect.getMetadata(type,target.constructor,propertyKey);
+            
+            let path = reflectionClass.getPath();
+            
             let request_url = ""; 
             let contentType = Helper.ContentType.HTML;
+            let async:boolean = false;
             if(methodParams instanceof String){
                 request_url = path+methodParams;
             }else{
                 request_url = path+ (methodParams.url || "");
                 contentType = methodParams.responseContentType || Helper.ContentType.HTML;
+                if(methodParams.hasOwnProperty("async")){
+                    async = methodParams.async;
+                }
             }
-            let request = new http.IncomingMessage();
-            let response = new http.ServerResponse(request);
+            let request = args.request;
+            let response = args.response;
             let body:any;
-            args.forEach((param, index)=>{
-                if(param instanceof http.IncomingMessage){
-                    param.request_url = request_url;
-                    request = param;
-                } 
-                if(param instanceof http.ServerResponse){
-                    response = param;
-                }
-                if(param instanceof BodyParameter){
-                    body = param;
-                }
-            });
-            body = await BodyParser.parse(request);
-            
-            let newArguments:any[] =[];
-            newArguments = newArguments.concat(args);
-            newArguments.push(body);
-
-            var result = originalMethod.apply(reflectionClass, newArguments);
-            if(type!==CONNECT_KEY && type!==HEAD_KEY && type!==PATCH_KEY){
-                response.writeHead(200,{'Content-type': contentType});
-                response.end(Helper.parse(result,contentType));
+            /**
+             * ---------------------------------------------
+             * BodyParser | Original method | result (Avg)  |
+             * ----------------------------------------------
+             *      0     |     0           | (GET) 33k RPS |
+             * ----------------------------------------------
+             *      1     |     0           | (GET) 31k RPS |
+             * ----------------------------------------------
+             *      0     |     1           | (GET) 24k RPS|
+             * ----------------------------------------------
+             *      1     |     1           | (GET) 20k RPS  |
+             * ----------------------------------------------
+             */
+            if(type === GET_KEY){
+                return processGet(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
             }else{
-                response.writeHead(200);
-                response.end();
+                return process(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
             }
-            return result;
         }
         Reflect.defineMetadata(type,params,classConstructor,propertyKey);
         return descriptor;        
     };
 };
+/* 
+Due to performance
+*/
+function processGet(request:any,response:any,args:any,type:string, contentType:any,body:any,originalMethod:any,reflectionClass:any,async:boolean){
+    return new Promise((resolve, reject)=>{
+        try{
+            let newArguments:any[] =[];
+            newArguments = newArguments.concat([args.req,args.resp]);
 
+            if(request.headers["content-length"]){
+                //the difference
+                body = BodyParser.parse(request);
+                newArguments.push(body);
+            }
+            if(async){
+                let promise = originalMethod.apply(reflectionClass, newArguments);
+                if(promise instanceof Promise){
+                    promise.then((result:any)=>{
+                            processResponse(result,response,type,contentType);
+                            resolve();
+                        }).catch((error:any)=>{
+                            reject(error);
+                        }); 
+                }else{
+                    processResponse(promise,response,type,contentType);
+                    resolve();
+                }
+            }else{
+                let result = originalMethod.apply(reflectionClass, newArguments);
+                processResponse(result,response,type,contentType);
+                resolve();
+            }
+        }catch(e){
+            reject(e);
+        }
+    });
+}
+function process(request:any,response:any,args:any,type:string, contentType:any,body:any,originalMethod:any,reflectionClass:any,async:boolean){
+    return new Promise(async (resolve, reject)=>{
+        try{
+            let newArguments:any[] =[];
+            newArguments = newArguments.concat([args.req,args.resp]);
+
+            if(request.headers["content-length"]){
+                //the difference
+                body = await BodyParser.parse(request);
+                newArguments.push(body);
+            }
+            if(async){
+                let promise = originalMethod.apply(reflectionClass, newArguments);
+                if(promise instanceof Promise){
+                    promise.then((result:any)=>{
+                            processResponse(result,response,type,contentType);
+                            resolve();
+                        }).catch((error:any)=>{
+                            reject(error);
+                        }); 
+                }else{
+                    processResponse(promise,response,type,contentType);
+                    resolve();
+                }
+            }else{
+                let result = originalMethod.apply(reflectionClass, newArguments);
+                processResponse(result,response,type,contentType);
+                resolve();
+            }
+        }catch(e){
+            reject(e);
+        }
+    });
+};
+function processResponse(result:any,response:any,type:string,contentType:any){
+    if([CONNECT_KEY,HEAD_KEY,PATCH_KEY].indexOf(type)===-1){
+        response.writeHead(200,{'Content-type': contentType});
+        response.end(Helper.parse(result,contentType));
+    }else{
+        response.writeHead(200);
+        response.end();
+    }
+};
 
 export function Get(params:any){
     return processRequest(params,GET_KEY);

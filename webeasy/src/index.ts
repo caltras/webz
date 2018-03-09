@@ -6,8 +6,11 @@ import * as debugModule from 'debug';
 import { IncomingMessage } from "http";
 import * as Lodash from 'lodash';
 import { Configuration } from './config/index';
+import { HtmlEngineFactory } from "./helpers/html.engine.helper";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
+var HelperUtils = ControllerHelper.HelperUtils;
+
 const debug = debugModule('webeasy-bootstrap');
 export class WebeasyBootStrap{
     
@@ -45,24 +48,37 @@ export class WebeasyBootStrap{
     addFilters(){
 
     }
-    create(name?:string){
+    loadTemplates(cfg:any){
+        let files:string[] = HelperUtils.walkSync(this.config.base_url+"/"+this.config.view.base,[]);
+        let engine = HtmlEngineFactory.create(cfg);
+        Lodash.each(Lodash.flatMapDeep(files),(file)=>{
+            engine.compile(file);
+        });
+    }
+    async create(name?:string){
         let exists = !!this.servers.hasOwnProperty(name);
         if(name && exists){ 
             debug("Server already exists");
             throw "Server already exists";
         }
         name = name || "default";
-        this.servers[name] = http.createServer(async (req,res)=>{
-            //CORS
-            //FILTERS
-            //AUTHENTICATION
-            //URL-PARSER
-            //REQUEST-PARSER
-            //ACTIONS/CONTROLLERS
-            
-            await controllerHelper.load(this.config,req, res);
-            await controllerHelper.callRoute(req,res);
-
+        await controllerHelper.load(this.config);
+        this.loadTemplates(this.config);
+        //CORS
+        //FILTERS
+        //AUTHENTICATION
+        //URL-PARSER
+        //REQUEST-PARSER
+        //ACTIONS/CONTROLLERS
+        let stack:any[] = [];
+        if(controllerHelper.hasFilters()){
+            stack.push({class: controllerHelper, mehtod: controllerHelper.doFilter});
+        }
+        stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
+        this.servers[name] = http.createServer((req,res)=>{
+            stack.forEach(s=>{
+                s.method.call(s.class,req,res);
+            });
         });
 
         //socket.io

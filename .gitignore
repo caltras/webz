@@ -65,3 +65,4 @@ webeasy/node_modules
 example-webeasy/dist
 example-webeasy/node_modules
 workspace.code-workspace
+report*.jsons

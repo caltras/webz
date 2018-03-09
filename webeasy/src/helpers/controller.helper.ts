@@ -3,6 +3,7 @@ import { HtmlEngineFactory } from "./html.engine.helper";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
+import { MethodWrapper } from './method.wrapper';
 export function parse(result:any,contentType:ContentType){
     if(contentType=== ContentType.APPLICATION_JSON){
         return JSON.stringify(result);
@@ -11,7 +12,54 @@ export function parse(result:any,contentType:ContentType){
 }
 export enum ContentType{
     APPLICATION_JSON ="application/json",
-    HTML="text/html"
+    APPLICATION_JAVASCRIPT="application/javascript",
+    APPLICATION_OCTET_STREAM="application/octet-stream",
+    APPLICATION_OGG="application/ogg",
+    APPLICATION_PDF="application/pdf",
+    APPLICATION_XHTML="application/xhtml+xml",
+    APPLICATION_XML="application/xml",
+    APPLICATION_ZIP="application/zip",
+    
+    AUDIO_MPEG="audio/mpeg",
+    AUDIO_WMA="audio/x-ms-wma",
+    AUDIO_REALAUDIO="audio/vnd.rn-realaudio",
+    AUDIO_WAV="audio/x-wav",
+
+    IMAGE_GIF="image/gif",
+    IMAGE_JPEG="image/jpeg",
+    IMAGE_PNG="image/png",
+    IMAGE_TIFF="image/tiff",
+    IMAGE__ICON="image/x-icon",
+    IMAGE_SVG="image/svg+xml",
+
+    MULTIPART_MIXED="multipart/mixed",
+
+    TEXT_CSS="text/css",
+    TEXT_CSV="text/csv",
+    TEXT_XML="text/xml",
+    HTML="text/html",
+    TEXT_PLAIN="text/plain",
+
+    VIDEO_MPEG="video/mpeg",
+    VIDEO_MP4="video/mp4",
+    VIDEO_QUICKTIME="video/quicktime",
+    VIDEO_WMV="video/x-ms-wmv",
+    VIDEO_WEBM="video/webm"
+    
+}
+export class HelperUtils{
+    public static walkSync(dir:any, filelist:any = []):any{
+        return fs.readdirSync(dir)
+            .filter(file => file.indexOf(".map") === -1 && file.indexOf(".d.ts") === -1)
+            .map(file => {
+                return fs.statSync(path.join(dir, file)).isDirectory()
+                        ? HelperUtils.walkSync(path.join(dir, file), filelist)
+                        : filelist.concat(path.join(dir, file))[0]
+                });
+    }
+    public static getListFileController(cfg:any):string[]{
+        return _.flatMapDeep(HelperUtils.walkSync(cfg.base_url+"/"+cfg.controllers, []));
+    }
 }
 export class ControllerHelper{
     private registeredClass:any;
@@ -20,29 +68,17 @@ export class ControllerHelper{
     static instance:ControllerHelper;
     private route:any = { "GET":{}, "POST":{}, "PUT":{}, "DELETE":{}, "OPTION":{}, "HEAD":{}};
     private cfg:any;
-    
+    private filters:any[] = [];
 
     constructor(){
         this.registeredUrls = {};
         this.registeredClass={};
     }
-
-    private walkSync(dir:any, filelist:any = []):any{
-        return fs.readdirSync(dir)
-            .filter(file => file.indexOf(".map") === -1 && file.indexOf(".d.ts") === -1)
-            .map(file => {
-                return fs.statSync(path.join(dir, file)).isDirectory()
-                        ? this.walkSync(path.join(dir, file), filelist)
-                        : filelist.concat(path.join(dir, file))[0]
-                });
-    }
-    private getListFileController(cfg:any):string[]{
-        return _.flatMapDeep(this.walkSync(cfg.base_url+"/"+cfg.controllers, []));
-    }
-    public async load(cfg:any,req:any,resp:any){
+    
+    public async load(cfg:any){
         ControllerHelper.instance.cfg = cfg;
 
-        let controllers:string[] = this.getListFileController(cfg);
+        let controllers:string[] = HelperUtils.getListFileController(cfg);
         controllers.forEach(async (path)=>{
             var name_path:string = _.findLast(path.split("/")).replace(/(\.js|\.ts)/,"");
             if(!this.isReady() || !this.registeredClass.hasOwnProperty(name_path)){
@@ -80,7 +116,7 @@ export class ControllerHelper{
                 let methods:any = Reflect.getMetadata(type.key,target,prop);
                 if(methods){
                     removeFns.push(prop);
-                    let url = methods.url;
+                    let url = methods;
                     if(typeof(url) !="string"){
                         url=url.url;
                     }
@@ -111,24 +147,42 @@ export class ControllerHelper{
     public setReady(is:boolean){
         this.ready = is;
     }
-    public async callRoute(req:any,resp:any){
-        try{
-            if(!Object.keys(this.route[req.method]).length){
-                throw Error(`Page not found - ${req.method} - ${req.url}`);
-            }else{
-                if(!this.route[req.method].hasOwnProperty(req.url)){
+    public callRoute(req:any,resp:any){
+        new Promise((resolve,reject)=>{
+            try{
+                if(!Object.keys(this.route[req.method]).length){
                     throw Error(`Page not found - ${req.method} - ${req.url}`);
                 }else{
-                    let controller = this.route[req.method][req.url];
-                    let instanceClazz = Reflect.getMetadata(SINGLETON_CLASS,controller.target);
-                    instanceClazz[controller.name].call(instanceClazz,req,resp);
+                    if(!this.route[req.method].hasOwnProperty(req.url)){
+                        throw Error(`Page not found - ${req.method} - ${req.url}`);
+                    }else{
+                        let controller = this.route[req.method][req.url];                     
+                        let param = new MethodWrapper(controller.target,req,resp);
+                        controller.method.call(controller.target,param);
+                    }
                 }
+            }catch(e){
+                resp.statusCode = 404;
+                resp.writeHead(404,{'Content-type':ContentType.HTML});
+                resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
             }
-        }catch(e){
-            resp.statusCode = 404;
-            resp.writeHead(404,{'Content-type':ContentType.HTML});
-            resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
+            resolve();
+        });
+    }
+    get filter(){
+        return this.filters;
+    }
+    hasFilters():boolean{
+        return this.filters.length>0;
+    }
+    public addFilter(filter:any|any[]){
+        if(filter instanceof Array){
+            this.filters = this.filters.concat(filter);
+        }else{
+            this.filters.push(filter);
         }
-
+    }
+    public async doFilter(req:any,resp:any){
+        console.log("call filters")
     }
 }

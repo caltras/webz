@@ -1,0 +1,10 @@
+config:
+  target: 'http://localhost:3002'
+  phases:
+    - duration: 1
+      arrivalRate: 25000
+      name : "50k users per 1 sec"
+scenarios:
+  - flow:
+    - get:
+        url: "/json"

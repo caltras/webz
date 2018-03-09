@@ -23,13 +23,29 @@ export class FormParameter extends BodyParameter{
         return this.files;
     }
     copyFiles(path:string){
-        if(!fs.existsSync(path)){
-            fs.mkdirSync(path);
+        try{
+            if(!fs.existsSync(path)){
+                fs.mkdirSync(path);
+            }
+            this.files.forEach((file)=>{
+                if(fs.existsSync(file.path)){
+                    fs.copyFileSync(file.path,path+"/"+file.name);
+                }
+            });
+        }catch(e){
+            throw new Error("IOException: "+e.message);
         }
-        this.files.forEach((file)=>{
-            if(fs.existsSync(file.path)){
-                fs.copyFileSync(file.path,path+"/"+file.name);
+    }
+    copyFilesAsync(path:string){
+        let self = this;
+        return new Promise((resolve,reject)=>{
+            try{
+                self.copyFiles(path);
+                resolve();
+            }catch(e){
+                reject(e);
             }
         });
+        
     }
 }
