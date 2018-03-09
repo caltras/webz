@@ -1,2 +1,2 @@
 export * from './security.filter';
-export * from './filter.interface';
+export * from './filter.abstract';

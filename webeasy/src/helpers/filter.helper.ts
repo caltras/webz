@@ -19,20 +19,34 @@ export class FilterHelper{
     
     public load(files:string[]){
         let lastFilter:Filter;
+
+        let order:number = 1;
         try{
             files.forEach((f:string)=>{
                 let file = require(Path.relative(__dirname,f));
                 Object.keys(file).forEach((clazz:any)=>{
                     let filter = new file[clazz]();
-                    if(lastFilter){
-                        lastFilter.setNext(filter);
+                    if(filter.__isFilter){
+                        if(!filter.hasOrder){
+                            filter.__order = order;
+                        }
+                        this.filters.push(filter);
+                        order++;
                     }
-                    if(!this.rootFilter){
-                        this.rootFilter = filter;
-                    }
-                    lastFilter = filter;
-                    this.filters.push(lastFilter);
+                    
                 })
+            });
+
+            this.filters.sort((a:any,b:any)=>{ 
+                return a.__order >= b.__order? 1: -1;
+            }).forEach((f:Filter)=>{
+                if(!lastFilter){
+                    lastFilter = f;
+                    this.rootFilter=f;
+                }else{
+                    lastFilter.setNext(f);
+                    lastFilter = f;
+                }
             });
         }catch(e){
             throw new FilterNotFoundException(e.message);
