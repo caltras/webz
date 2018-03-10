@@ -9,6 +9,8 @@ import { Configuration } from './config/index';
 import { HtmlEngineFactory } from "./helpers/html.engine.helper";
 import { FilterHelper } from './helpers/filter.helper';
 import * as Path from 'path';
+import { Cors } from "./filters/cors";
+import { Filter } from "./filters";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
@@ -32,6 +34,7 @@ export class WebeasyBootStrap{
         cfg.filters = Lodash.map(Configuration.getInstance().getConfig().filters,(f:string)=>{
             return Path.join(__dirname,f);
         }).concat(cfg.filters);
+
         this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
     }
 
@@ -55,8 +58,9 @@ export class WebeasyBootStrap{
         return this;
         
     }
-    addFilters(any:string[]){
-        
+    addFilters(filter:Filter){
+        filterHelper.addFilter(filter);
+        filterHelper.sortingFilters();
     }
     loadFilters(){     
         filterHelper.load(this.config.filters);
@@ -68,6 +72,11 @@ export class WebeasyBootStrap{
             engine.compile(file);
         });
     }
+    cors(){
+        if(this.config.cors.enabled){
+            this.addFilters(new Cors(this.config.cors));
+        }
+    }
     async create(name?:string){
         let exists = !!this.servers.hasOwnProperty(name);
         if(name && exists){ 
@@ -76,16 +85,13 @@ export class WebeasyBootStrap{
         }
         name = name || "default";
         await controllerHelper.load(this.config);
+        this.cors();
         this.loadFilters();
         this.loadTemplates();
-        //CORS
-        //FILTERS
         //AUTHENTICATION
         //URL-PARSER
-        //REQUEST-PARSER
-        //ACTIONS/CONTROLLERS
         let stack:any[] = [];
-        if(filterHelper.hasFilters()){
+        if(filterHelper.hasFilters() && this.config.enabledFilters){
             stack.push({class: filterHelper, method: filterHelper.doFilter});
         }
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });

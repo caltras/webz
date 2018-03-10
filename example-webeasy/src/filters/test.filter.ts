@@ -1,4 +1,4 @@
-import { Filter } from "webeasy/filters/filter.interface";
+import { Filter } from "webeasy/filters/filter.abstract";
 import * as Decorator from "webeasy/decorators/index";
 import { ServerRequest, ServerResponse } from "http";
 

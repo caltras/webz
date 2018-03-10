@@ -1,6 +1,6 @@
 import { BaseController, BodyParameter, FormParameter } from "webeasy/controller";
 import { ContentType } from "webeasy/helpers/controller.helper";
-import { Controller, Get, Post, Put, Delete, Inject } from 'webeasy/decorators';
+import { Controller, Get, Post, Put, Delete, Options, Inject } from 'webeasy/decorators';
 import { IncomingMessage, ServerResponse, ServerRequest } from 'http';
 import { Service } from '../service';
 import * as fs from 'fs';
@@ -37,6 +37,12 @@ class HomeController extends BaseController{
     @Delete({ url: "/", responseContentType : ContentType.APPLICATION_JSON})
     public delete(request:IncomingMessage,response:ServerResponse, body:BodyParameter){
         return body.getData();
+    }
+
+    @Options("/")
+    public customOption(request:IncomingMessage,response:ServerResponse){
+        console.log("OPTIONS");
+        response.setHeader("X-Test","true");
     }
 }
 

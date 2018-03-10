@@ -1,4 +1,4 @@
-import { SINGLETON_CLASS, CONTROLLER_KEY, GET_KEY, POST_KEY, PUT_KEY, DELETE_KEY } from "../decorators/controller.decorator";
+import { SINGLETON_CLASS, CONTROLLER_KEY, GET_KEY, POST_KEY, PUT_KEY, DELETE_KEY, OPTIONS_KEY } from "../decorators/controller.decorator";
 import { HtmlEngineFactory } from "./html.engine.helper";
 import * as fs from 'fs';
 import * as path from 'path';
@@ -66,7 +66,7 @@ export class ControllerHelper{
     private registeredUrls:any;
     private ready:boolean;
     static instance:ControllerHelper;
-    private route:any = { "GET":{}, "POST":{}, "PUT":{}, "DELETE":{}, "OPTION":{}, "HEAD":{}};
+    private route:any = { "GET":{}, "POST":{}, "PUT":{}, "DELETE":{}, "OPTIONS":{}, "HEAD":{}};
     private cfg:any;
 
     constructor(){
@@ -109,7 +109,7 @@ export class ControllerHelper{
             return typeof(instance[prop])=="function" && prop !=="constructor";
         });
         let removeFns:any[] = [];
-        [{key:GET_KEY,name:"GET"},{key:POST_KEY,name:"POST"},{key:PUT_KEY,name:"PUT"},{key:DELETE_KEY,name:"DELETE"}].forEach((type)=>{
+        [{key:GET_KEY,name:"GET"},{key:POST_KEY,name:"POST"},{key:PUT_KEY,name:"PUT"},{key:DELETE_KEY,name:"DELETE"},{key:OPTIONS_KEY,name:"OPTIONS"}].forEach((type)=>{
 
             fns.forEach((prop:any)=>{
                 let methods:any = Reflect.getMetadata(type.key,target,prop);

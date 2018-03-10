@@ -4,6 +4,15 @@ var config = {
     port: 3000,
     base_url:'../',
     controllers: 'controllers',
+    cors: {
+        enabled:true,
+        origin: "*",
+        allowMethods: "*",
+        credentials:true,
+        allowHeaders:'Content-Type, Authorization',
+        optionsUrl:false
+    },
+    enabledFilters:true,
     filters: [
         'filters/security.filter'
     ],

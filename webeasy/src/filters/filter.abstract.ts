@@ -8,7 +8,7 @@ export abstract class Filter {
     
     abstract doFilter(request:ServerRequest, response:ServerResponse):void;
     protected next(request:ServerRequest, response:ServerResponse){
-        console.log("#"+this+" - "+this.constructor.name);
+        debug("Filter ["+this.constructor.name+"]");
         if(this.sibling!=null && !response.finished){
             this.sibling.doFilter(request,response);
         }
