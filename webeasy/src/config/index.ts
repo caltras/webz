@@ -5,14 +5,14 @@ var config = {
     base_url:'../',
     controllers: 'controllers',
     cors: {
-        enabled:true,
+        enabled:false,
         origin: "*",
         allowMethods: "*",
         credentials:true,
         allowHeaders:'Content-Type, Authorization',
         optionsUrl:false
     },
-    enabledFilters:true,
+    enabledFilters:false,
     filters: [
         'filters/security.filter'
     ],
