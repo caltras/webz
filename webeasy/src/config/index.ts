@@ -12,7 +12,7 @@ var config = {
         allowHeaders:'Content-Type, Authorization',
         optionsUrl:false
     },
-    enabledFilters:false,
+    enabledFilters:true,
     filters: [
         'filters/security.filter'
     ],
@@ -23,6 +23,9 @@ var config = {
     error: {
         engine: 'handlebars',
         "404": 'view/error/404.page.html'
+    },
+    websocket: {
+        enabled:false
     }
 };
 var cfg = {};

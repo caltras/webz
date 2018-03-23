@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as Path from 'path';
-import { Filter } from '../filters';
+import { AbstractFilter } from '../filters';
 import * as filterDebug from 'debug';
 import { ServerRequest, ServerResponse } from 'http';
-const debug = filterDebug("Filter");
+const debug = filterDebug("filter");
 
 export class FilterNotFoundException extends Error{
     constructor(e:any){
@@ -13,7 +13,7 @@ export class FilterNotFoundException extends Error{
 export class FilterHelper{
     private static instance:FilterHelper;
     public filters:any[] = [];
-    public rootFilter:Filter;
+    public rootFilter:AbstractFilter;
     public static getInstance():FilterHelper{
         if(!FilterHelper.instance){
             FilterHelper.instance = new FilterHelper();
@@ -28,9 +28,9 @@ export class FilterHelper{
                 let file = require(Path.relative(__dirname,f));
                 Object.keys(file).forEach((clazz:any)=>{
                     let filter = new file[clazz]();
-                    if(filter.__isFilter){
-                        if(!filter.hasOrder){
-                            filter.__order = order;
+                    if(filter.constructor.__isFilter){
+                        if(!filter.constructor.hasOrder){
+                            filter.constructor__order = order;
                         }
                         this.filters.push(filter);
                         order++;
@@ -46,10 +46,13 @@ export class FilterHelper{
     }
     sortingFilters(){
         this.rootFilter = null;
-        let lastFilter:Filter;
+        let lastFilter:AbstractFilter;
         this.filters.sort((a:any,b:any)=>{ 
-            return a.__order >= b.__order? 1: -1;
-        }).forEach((f:Filter)=>{
+            if(!a.constructor.__order){
+                return 1;
+            }
+            return a.constructor.__order >= b.constructor.__order? 1: -1;
+        }).forEach((f:AbstractFilter)=>{
             if(!lastFilter){
                 lastFilter = f;
                 this.rootFilter=f;
@@ -65,7 +68,7 @@ export class FilterHelper{
     hasFilters():boolean{
         return this.filters.length>0;
     }
-    public addFilter(filter:Filter|Filter[]){
+    public addFilter(filter:AbstractFilter|AbstractFilter[]){
         if(filter instanceof Array){
             this.filters = this.filters.concat(filter);
         }else{

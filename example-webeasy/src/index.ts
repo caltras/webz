@@ -6,6 +6,7 @@ import * as os from 'os';
 
 config.base_url = base_url;
 var web = new WebeasyBootStrap(config);
+
 (async ()=> {
     await web.create();
     web.listen();

@@ -28,7 +28,8 @@
             "program": "${workspaceRoot}/example-webeasy/src/index.ts",
             "outFiles": ["${workspaceRoot}/example-webeasy/dist/*.js"],
             "env": {
-                "DEBUG":"*"
+                "DEBUG":"*",
+                "DEBUG_COLORS":"true"
             }
         },
         {

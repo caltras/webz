@@ -10,7 +10,7 @@ import { HtmlEngineFactory } from "./helpers/html.engine.helper";
 import { FilterHelper } from './helpers/filter.helper';
 import * as Path from 'path';
 import { Cors } from "./filters/cors";
-import { Filter } from "./filters";
+import { AbstractFilter } from "./filters";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
@@ -37,28 +37,8 @@ export class WebeasyBootStrap{
 
         this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
     }
-
-    listen(name?:string,port?:any){
-        if(!Object.keys(this.servers).length){
-            debug("There is any server configured.");
-            throw "There is any server configured.";
-        }
-        if(!name && Object.keys(this.servers).length == 1){
-            let n = Object.keys(this.servers)[0];
-            this.servers[n].listen(this.config.port,()=>{
-                debug(`Listening server ${n} at ${this.config.port}`);
-            });
-        }else{
-            name = name || "default";
-            port = name === "default" ? this.config.port : port;
-            this.servers[name].listen(port,()=>{
-                debug(`Listening server ${name} at ${port}`);
-            });
-        }
-        return this;
-        
-    }
-    addFilters(filter:Filter){
+    
+    addFilters(filter:AbstractFilter|AbstractFilter[]){
         filterHelper.addFilter(filter);
         filterHelper.sortingFilters();
     }
@@ -100,11 +80,29 @@ export class WebeasyBootStrap{
                 if(!res.finished){
                     s.method.call(s.class,req,res);
                 }
-                
             });
         });
 
         //socket.io
+        return this;
+    }
+    listen(name?:string,port?:any){
+        if(!Object.keys(this.servers).length){
+            debug("There is any server configured.");
+            throw "There is any server configured.";
+        }
+        if(!name && Object.keys(this.servers).length == 1){
+            let n = Object.keys(this.servers)[0];
+            this.servers[n].listen(this.config.port,()=>{
+                debug(`Listening server ${n} at ${this.config.port}`);
+            });
+        }else{
+            name = name || "default";
+            port = name === "default" ? this.config.port : port;
+            this.servers[name].listen(port,()=>{
+                debug(`Listening server ${name} at ${port}`);
+            });
+        }
         return this;
     }
 

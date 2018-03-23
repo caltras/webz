@@ -1,10 +1,10 @@
 import { ServerRequest, ServerResponse } from "http";
 import { Order, Filter } from "../decorators";
-import * as Filters from './filter.abstract';
+import {AbstractFilter} from './filter.abstract';
 
 @Filter()
 @Order(-2)
-export class Cors extends Filters.Filter{
+export class Cors extends AbstractFilter{
     private corsConfiguration:any;
 
     constructor(options:any){

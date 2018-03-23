@@ -3,8 +3,8 @@ import * as filterDebug from 'debug';
 
 const debug = filterDebug("filter");
 
-export abstract class Filter {
-    protected sibling:Filter;
+export abstract class AbstractFilter {
+    protected sibling:AbstractFilter;
     
     abstract doFilter(request:ServerRequest, response:ServerResponse):void;
     protected next(request:ServerRequest, response:ServerResponse){
@@ -13,7 +13,7 @@ export abstract class Filter {
             this.sibling.doFilter(request,response);
         }
     }
-    public setNext(s:Filter){
+    public setNext(s:AbstractFilter){
         this.sibling = s;
     }
 }
