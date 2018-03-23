@@ -27,13 +27,13 @@ export class WebeasyBootStrap{
         this.urlParser = urlModule;
         this.servers = {};
         Configuration.getInstance().getConfig().base_url = cfg.base_url;
-        cfg.filters = cfg.filters || [];
-        cfg.filters = Lodash.map(cfg.filters,(f:string)=>{
+        cfg.filter = cfg.filters || {};
+        cfg.filter.filters = Lodash.map(cfg.filter.filters,(f:string)=>{
             return Path.join(cfg.base_url,f);
         });
-        cfg.filters = Lodash.map(Configuration.getInstance().getConfig().filters,(f:string)=>{
+        cfg.filter.filters = Lodash.map(Configuration.getInstance().getConfig().filter.filters,(f:string)=>{
             return Path.join(__dirname,f);
-        }).concat(cfg.filters);
+        }).concat(cfg.filter.filters);
 
         this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
     }
@@ -43,7 +43,7 @@ export class WebeasyBootStrap{
         filterHelper.sortingFilters();
     }
     loadFilters(){     
-        filterHelper.load(this.config.filters);
+        filterHelper.load(this.config.filter.filters);
     }
     loadTemplates(){
         let files:string[] = HelperUtils.walkSync(this.config.base_url+"/"+this.config.view.base,[]);
@@ -71,14 +71,14 @@ export class WebeasyBootStrap{
         //AUTHENTICATION
         //URL-PARSER
         let stack:any[] = [];
-        if(filterHelper.hasFilters() && this.config.enabledFilters){
+        if(filterHelper.hasFilters() && this.config.filter.enabled){
             stack.push({class: filterHelper, method: filterHelper.doFilter});
         }
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
         this.servers[name] = http.createServer((req,res)=>{
             stack.forEach(s=>{
                 if(!res.finished){
-                    s.method.call(s.class,req,res);
+                    s.method.call(s.class,req,res,this.config);
                 }
             });
         });

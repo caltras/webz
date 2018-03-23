@@ -3,6 +3,8 @@ import * as Path from 'path';
 import { AbstractFilter } from '../filters';
 import * as filterDebug from 'debug';
 import { ServerRequest, ServerResponse } from 'http';
+import * as Lodash from 'lodash';
+
 const debug = filterDebug("filter");
 
 export class FilterNotFoundException extends Error{
@@ -75,9 +77,33 @@ export class FilterHelper{
             this.filters.push(filter);
         }
     }
-    public async doFilter(req:ServerRequest,resp:ServerResponse){
-        debug("Starting process filter...");
-        this.rootFilter.doFilter(req,resp);
-        debug("Finishing process filter.");
+    public async doFilter(req:ServerRequest,resp:ServerResponse,config:any){
+        if(!this.checkExceptions(config.filter.exceptions,req.url)){
+            debug("Starting process filter...");
+            this.rootFilter.doFilter(req,resp);
+            debug("Finishing process filter.");
+        }else{
+            debug("%s is exception",req.url);
+        }
+    }
+    public checkExceptions(exceptions:string[],url:string){
+        let characters = {
+            "[*]":".?",
+        }
+        let isException = false;
+        let newExceptions = exceptions.map((e)=>{
+            Lodash.each(characters,(v,k)=>{
+                e = e.replace(new RegExp(k,"g"),v);
+            });
+            return e;
+        })
+        for(let i=0;i<newExceptions.length;i++){
+            isException = new RegExp(newExceptions[i]).test(url);
+            if(isException){
+                return isException;
+            }
+        }
+        return isException;
+
     }
 }

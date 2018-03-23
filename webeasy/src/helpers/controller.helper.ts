@@ -146,7 +146,7 @@ export class ControllerHelper{
     public setReady(is:boolean){
         this.ready = is;
     }
-    public callRoute(req:any,resp:any){
+    public callRoute(req:any,resp:any, config?:any){
         new Promise((resolve,reject)=>{
             try{
                 if(!Object.keys(this.route[req.method]).length){

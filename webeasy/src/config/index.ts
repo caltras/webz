@@ -12,10 +12,13 @@ var config = {
         allowHeaders:'Content-Type, Authorization',
         optionsUrl:false
     },
-    enabledFilters:true,
-    filters: [
-        'filters/security.filter'
-    ],
+    filter: {
+        enabled:true,
+        exceptions: ['*login*','*logout*'],
+        filters:[ 
+            'filters/security.filter'
+        ]
+    },
     view:{
         engine: 'handlebars',
         base:"view"
