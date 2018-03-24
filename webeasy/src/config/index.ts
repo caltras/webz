@@ -13,8 +13,8 @@ var config = {
         optionsUrl:false
     },
     filter: {
-        enabled:true,
-        exceptions: ['*login*','*logout*'],
+        enabled:false,
+        exceptions: ['*login','*logout'],
         filters:[ 
             'filters/security.filter'
         ]
