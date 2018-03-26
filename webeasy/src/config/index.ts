@@ -12,12 +12,16 @@ var config = {
         allowHeaders:'Content-Type, Authorization',
         optionsUrl:false
     },
+    resources:["/public"],
     filter: {
-        enabled:false,
-        exceptions: ['*login','*logout'],
+        enabled:true,
+        exceptions: ['*.css','*.js','*.html'],
         filters:[ 
             'filters/security.filter'
-        ]
+        ],
+        security:{
+            exceptions: ['*login','*logout','*public/*.css','*public/*.js','*public/*.html']
+        }
     },
     view:{
         engine: 'handlebars',

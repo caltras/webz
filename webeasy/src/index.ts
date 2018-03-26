@@ -8,6 +8,7 @@ import * as Lodash from 'lodash';
 import { Configuration } from './config/index';
 import { HtmlEngineFactory } from "./helpers/html.engine.helper";
 import { FilterHelper } from './helpers/filter.helper';
+import { ResourceHelper } from './helpers/resource.helper';
 import * as Path from 'path';
 import { Cors } from "./filters/cors";
 import { AbstractFilter } from "./filters";
@@ -15,6 +16,7 @@ import { AbstractFilter } from "./filters";
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
 var filterHelper = FilterHelper.getInstance();
+var resourceHelper = ResourceHelper.getInstance();
 
 const debug = debugModule('webeasy-bootstrap');
 export class WebeasyBootStrap{
@@ -65,17 +67,20 @@ export class WebeasyBootStrap{
         }
         name = name || "default";
         await controllerHelper.load(this.config);
+        filterHelper.securityFilter = this.config.filter.security;
         this.cors();
         this.loadFilters();
         this.loadTemplates();
-        //AUTHENTICATION
-        //URL-PARSER
         let stack:any[] = [];
         if(filterHelper.hasFilters() && this.config.filter.enabled){
             stack.push({class: filterHelper, method: filterHelper.doFilter});
         }
+        resourceHelper.setResources(this.config.resources);
+        stack.push({ class: resourceHelper, method: resourceHelper.doFilter})
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
         this.servers[name] = http.createServer((req,res)=>{
+            //AUTHENTICATION
+            //URL-PARSER
             stack.forEach(s=>{
                 if(!res.finished){
                     s.method.call(s.class,req,res,this.config);

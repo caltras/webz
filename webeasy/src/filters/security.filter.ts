@@ -9,9 +9,16 @@ export class Security extends SecurityInterface{
         super();
     }
     doFilter(request:ServerRequest, response:ServerResponse){
+        if(!super.checkSecurityexceptions(request)){
+            console.log("check security");
+            if(!this.isAuthenticate(request,response)){
+                response.statusCode = 403;
+                response.end();
+            }
+        }
         this.next(request,response);
     }
-    isAuthenticate():boolean{
+    isAuthenticate(request:ServerRequest, response:ServerResponse):boolean{
         return true;
     }
 }

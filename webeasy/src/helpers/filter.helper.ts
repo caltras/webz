@@ -17,6 +17,7 @@ export class FilterHelper{
     public filters:any[] = [];
     public rootFilter:AbstractFilter;
     public exceptions:any = {};
+    public securityFilter:any = {};
     public static getInstance():FilterHelper{
         if(!FilterHelper.instance){
             FilterHelper.instance = new FilterHelper();
