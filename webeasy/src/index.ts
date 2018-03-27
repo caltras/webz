@@ -12,6 +12,7 @@ import { ResourceHelper } from './helpers/resource.helper';
 import * as Path from 'path';
 import { Cors } from "./filters/cors";
 import { AbstractFilter } from "./filters";
+import { ConfigurationHelper } from "./helpers/configuration.helper";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
@@ -38,6 +39,7 @@ export class WebeasyBootStrap{
         }).concat(cfg.filter.filters);
 
         this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
+        ConfigurationHelper.getInstance().setConfiguration(this.config);
     }
     
     addFilters(filter:AbstractFilter|AbstractFilter[]){

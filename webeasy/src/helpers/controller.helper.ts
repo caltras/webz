@@ -4,6 +4,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
 import { MethodWrapper } from './method.wrapper';
+import { LoginController } from '../controller/login.controller';
+import { LogoutController } from '../controller/logout.controller';
+
 export function parse(result:any,contentType:ContentType){
     if(contentType=== ContentType.APPLICATION_JSON){
         return JSON.stringify(result);
@@ -78,6 +81,13 @@ export class ControllerHelper{
         ControllerHelper.instance.cfg = cfg;
 
         let controllers:string[] = HelperUtils.getListFileController(cfg);
+        if(!cfg.authentication.custom){
+            this.registeredClass["login.controller"] = new LoginController("/login",HtmlEngineFactory.create(this.cfg));
+            this.mappingRoute(LoginController);
+            this.registeredClass["logout.controller"] = new LogoutController("/logout",HtmlEngineFactory.create(this.cfg));
+            this.mappingRoute(LogoutController);
+        }
+
         controllers.forEach(async (path)=>{
             var name_path:string = _.findLast(path.split("/")).replace(/(\.js|\.ts)/,"");
             if(!this.isReady() || !this.registeredClass.hasOwnProperty(name_path)){

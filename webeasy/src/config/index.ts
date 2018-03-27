@@ -4,6 +4,9 @@ var config = {
     port: 3000,
     base_url:'../',
     controllers: 'controllers',
+    authentication:{
+        custom:false,
+    },
     cors: {
         enabled:false,
         origin: "*",
@@ -29,10 +32,16 @@ var config = {
     },
     error: {
         engine: 'handlebars',
-        "404": 'view/error/404.page.html'
+        "404": 'view/error/404.page.html',
+        "403": 'view/error/403.page.html'
     },
     websocket: {
         enabled:false
+    },
+    redirect: {
+        login:"/login",
+        logout:"/logout",
+        denied:"/denied"
     }
 };
 var cfg = {};
