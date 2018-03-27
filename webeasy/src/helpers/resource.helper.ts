@@ -1,6 +1,7 @@
-import { ServerRequest, ServerResponse } from "http";
+import { ServerRequest, ServerResponse, Server } from "http";
 import * as fs from 'fs';
 import * as Path from 'path';
+import { ContentType, ContentTypeHelper } from "./controller.helper";
 
 export class ResourceHelper{
     private static instance:ResourceHelper;
@@ -35,11 +36,11 @@ export class ResourceHelper{
             let filePathFramework = Path.join(__dirname,"../",req.url);
             let filePath = Path.join(config.base_url,req.url);
             if(fs.existsSync(filePath)){
-                resp.statusCode = 200;
+                resp.writeHead(200,{'Content-type': this.defineContentType(req)});
                 resp.end(fs.readFileSync(filePath,"utf-8").toString());
             }else{
                 if(fs.existsSync(filePathFramework)){
-                    resp.statusCode = 200;
+                    resp.writeHead(200,{'Content-type': this.defineContentType(req)});
                     resp.end(fs.readFileSync(filePathFramework,"utf-8").toString());
                 }else{
                     resp.statusCode = 404;
@@ -47,5 +48,9 @@ export class ResourceHelper{
                 }
             }
         }
+    }
+    public defineContentType(req:ServerRequest):string{
+        let parts = req.url.split(".");
+        return ContentTypeHelper.getContentTypeBySufix(parts[parts.length-1]);
     }
 }

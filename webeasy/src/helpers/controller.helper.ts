@@ -50,6 +50,19 @@ export enum ContentType{
     VIDEO_WEBM="video/webm"
     
 }
+export class ContentTypeHelper {
+
+    static getContentTypeBySufix(suffix:string):string{
+        let content:any = ContentType;
+        let type:string = ContentType.HTML;
+        Object.keys(content).forEach((key)=>{
+            if(content[key].indexOf(suffix) > -1){
+                type = content[key];
+            }
+        });
+        return type ;
+    }
+}
 export class HelperUtils{
     public static walkSync(dir:any, filelist:any = []):any{
         return fs.readdirSync(dir)

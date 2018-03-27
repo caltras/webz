@@ -1,0 +1,82 @@
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    flex: 1;
+}
+.login{
+    padding:10px;
+    border: solid 1px #e2e2e2;
+    max-width: 360px;
+    min-width: 360px;
+    border-radius: 4px;
+    box-shadow:5px 5px 20px 1px #b7b7b7;
+    background-color: #fefefe;
+}
+.login-head{
+    height: 50px;
+}
+.login-foot{
+    height: 35px;
+    padding-top:2px;
+    border-top: solid 1px #e2e2e2;
+    flex-direction: column;
+}
+.login-foot .form-group{
+    display: flex;
+}
+.login-foot .form-group .container-label{
+    flex:1;
+}
+.login-head{
+    padding-bottom:2px;
+    border-bottom: solid 1px #e2e2e2;
+}
+.login-head .title{
+    color:#0D47A1;
+}
+.login-form{
+    display: flex;
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+.login-form form{
+    flex: 1;
+}
+.login-form .form-group{
+    display: flex;
+    flex:1;
+    flex-direction: row;
+}
+.login-form .form-group .container-label{
+    max-width: 100px;
+}
+.login-form .form-group .container-label{
+    content:'*'
+}
+.login-form .form-group .container-input input{
+    width: 90%;
+}
+
+.login-form .form-group .container-label, .login-form .form-group .container-input{
+    flex:1;    
+}
+.login-form .form-group .btn-submit{
+    border-color: #64B5F6;
+    background-color: #2196F3;
+    width: 75px;
+    color:white;
+    font-weight: 700;
+}
+.form-group .btn.btn-signup{
+    border-color: #DCE775;
+    background-color: #CDDC39;
+    width: 100px;
+    color:white;
+    font-weight: 700;
+}
+.form-group .container-label.signup-label{
+    font-weight: 500;
+    color:#2196F3;
+}

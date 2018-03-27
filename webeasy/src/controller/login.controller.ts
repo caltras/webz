@@ -14,4 +14,12 @@ export class LoginController extends BaseController{
     public postLogin(request:ServerRequest,response:ServerResponse,body:FormParameter){
         this.redirect("/",response);
     }
+    @Post({url:"/signup"})
+    public signup(request:ServerRequest,response:ServerResponse,body:FormParameter){
+        this.redirect("/",response);
+    }
+    @Post({url:"/recovery"})
+    public recovery(request:ServerRequest,response:ServerResponse,body:FormParameter){
+        this.redirect("/",response);
+    }
 }

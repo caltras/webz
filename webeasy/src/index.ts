@@ -80,6 +80,11 @@ export class WebeasyBootStrap{
         resourceHelper.setResources(this.config.resources);
         stack.push({ class: resourceHelper, method: resourceHelper.doFilter})
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
+        // {
+        //     cookieName:'webeasy-session'
+        // }
+        //let session = Sessions      
+
         this.servers[name] = http.createServer((req,res)=>{
             //AUTHENTICATION
             //URL-PARSER

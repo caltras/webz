@@ -2,27 +2,53 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+        <link href="/public/css/style.css" rel="stylesheet">
         <link href="/public/css/login.css" rel="stylesheet">
     </head>
     <body>
-        <div class="container">
-            <div>
-                <form action="/login/" method="POST">
-                    <div>
-                        <div>User:</div>
-                        <div><input type="text" name="user"></div>
+        <div class="page">
+            <div class="container">
+                <div class="login">
+                    <div class="login-head">
+                        <h1 class="title">WebEasy</h1>
                     </div>
-                    <div>
-                        <div>Password:</div>
-                        <div><input type="password" name="password"></div>
+                    <div class="login-form">
+                        <form action="/login/" method="POST">
+                            <div class="form-group">
+                                <div class="container-label">User:</div>
+                                <div class="container-input"><input type="text" name="user" required></div>
+                            </div>
+                            <div class="form-group">
+                                <div class="container-label required">Password:</div>
+                                <div class="container-input"><input type="password" name="password" required></div>
+                            </div>
+                            <div class="form-group">
+                                <div class="container-label"></div>
+                                <button class="btn btn-submit">
+                                    <span></span>
+                                    Login
+                                </button>
+                                
+                            </div>
+                            <div class="form-group">
+                                <div class="container-label"></div>
+                                <div>
+                                    <a class="link" href="/login/recovery">Did you forget your user or password?</a>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                    <div>
-                        <button>
-                            <span></span>
-                            Login
-                        </button>
+                    <div class="login-foot">
+                        <div class="form-group">
+                            <div class="container-label signup-label">Want a new account?</div>
+                            <button class="btn btn-signup">
+                                <span></span>
+                                Sign Up
+                            </button>
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </body>
