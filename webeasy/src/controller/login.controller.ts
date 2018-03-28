@@ -2,6 +2,7 @@ import {BaseController} from './base.controller';
 import {Controller, Inject, Get, Post} from '../decorators'
 import { ServerRequest, ServerResponse } from 'http';
 import { FormParameter } from '.';
+import { SessionHelper } from '../helpers/session.helper';
 
 @Controller("/login")
 export class LoginController extends BaseController{
@@ -12,6 +13,7 @@ export class LoginController extends BaseController{
     }
     @Post({url:"/"})
     public postLogin(request:ServerRequest,response:ServerResponse,body:FormParameter){
+        SessionHelper.getInstance().setUser(request,body.getData());
         this.redirect("/",response);
     }
     @Post({url:"/signup"})

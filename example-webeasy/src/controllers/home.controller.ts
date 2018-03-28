@@ -5,6 +5,8 @@ import { IncomingMessage, ServerResponse, ServerRequest } from 'http';
 import { Service } from '../service';
 import * as fs from 'fs';
 import * as Path from 'path';
+import {SessionHelper} from 'webeasy/helpers/session.helper';
+import { User } from 'webeasy/security/user';
 
 @Controller("/")
 class HomeController extends BaseController{
@@ -13,7 +15,9 @@ class HomeController extends BaseController{
 
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
-        return "Hello World";
+        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
+        console.log(SessionHelper.getInstance().getProperty(request,"last_visited"));
+        return "Hello "+user.user;
     }
     @Get({ url: "/html"})
     public html(request:IncomingMessage,response:ServerResponse){

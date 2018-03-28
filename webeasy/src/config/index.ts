@@ -23,7 +23,7 @@ var config = {
             'filters/security.filter'
         ],
         security:{
-            exceptions: ['*login','*logout','*public/*.css','*public/*.js','*public/*.html']
+            exceptions: ['*login*','*logout*','*public/*.css','*public/*.js','*public/*.html']
         }
     },
     view:{
@@ -39,8 +39,9 @@ var config = {
         enabled:false
     },
     redirect: {
-        login:"/login",
-        logout:"/logout",
+        welcome:"/",
+        login:"/login/",
+        logout:"/logout/",
         denied:"/denied"
     }
 };

@@ -13,6 +13,9 @@ import * as Path from 'path';
 import { Cors } from "./filters/cors";
 import { AbstractFilter } from "./filters";
 import { ConfigurationHelper } from "./helpers/configuration.helper";
+import * as sessions from 'client-sessions';
+import {OptionsSession, SessionHelper} from './helpers/session.helper';
+
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
@@ -39,6 +42,7 @@ export class WebeasyBootStrap{
         }).concat(cfg.filter.filters);
 
         this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
+        this.config.filter.exceptions = this.config.filter.exceptions.concat(this.config.filter.security.exceptions);
         ConfigurationHelper.getInstance().setConfiguration(this.config);
     }
     
@@ -80,19 +84,21 @@ export class WebeasyBootStrap{
         resourceHelper.setResources(this.config.resources);
         stack.push({ class: resourceHelper, method: resourceHelper.doFilter})
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
-        // {
-        //     cookieName:'webeasy-session'
-        // }
-        //let session = Sessions      
+
+        SessionHelper.getInstance().options = new OptionsSession();
+        SessionHelper.getInstance().session = sessions(SessionHelper.getInstance().options);
 
         this.servers[name] = http.createServer((req,res)=>{
             //AUTHENTICATION
             //URL-PARSER
-            stack.forEach(s=>{
-                if(!res.finished){
-                    s.method.call(s.class,req,res,this.config);
-                }
+            SessionHelper.getInstance().session(req,res,()=>{
+                stack.forEach(s=>{
+                    if(!res.finished){
+                        s.method.call(s.class,req,res,this.config);
+                    }
+                });
             });
+            
         });
 
         //socket.io

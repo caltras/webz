@@ -4,6 +4,7 @@ import { AbstractFilter } from '../filters';
 import * as filterDebug from 'debug';
 import { ServerRequest, ServerResponse } from 'http';
 import * as Lodash from 'lodash';
+import { SessionHelper } from './session.helper';
 
 const debug = filterDebug("filter");
 
@@ -85,7 +86,14 @@ export class FilterHelper{
             this.rootFilter.doFilter(req,resp);
             debug("Finishing process filter.");
         }else{
-            debug("%s is exception to filter",req.url);
+            if(req.url === config.redirect.login && !!SessionHelper.getInstance().getAuthenticateUser(req)){
+                resp.writeHead(301,{
+                    Location: (config.redirect.welcome)
+                });
+                resp.end();
+            }else{
+                debug("%s is exception to filter",req.url);
+            }
         }
     }
     public checkExceptions(exceptions:string[],url:string){
