@@ -12,6 +12,5 @@ export default {
     },
     error: {
         engine: 'handlebars',
-        //"404": '../node_modules/webeasy/view/error/404.page.html'
     }
 };

@@ -20,12 +20,18 @@
   "author": "Claudio Traspadini Oliveira",
   "license": "ISC",
   "dependencies": {
+    "@types/passport": "^0.4.3",
+    "@types/passport-google-oauth": "^1.0.37",
+    "@types/passport-local": "^1.0.32",
     "async": "^2.6.0",
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "errorhandler": "^1.5.0",
     "lodash": "^4.17.4",
+    "passport": "^0.4.0",
+    "passport-google-oauth": "^1.0.0",
+    "passport-local": "^1.0.0",
     "request": "^2.83.0",
     "webeasy": "file:../webeasy/dist"
   },

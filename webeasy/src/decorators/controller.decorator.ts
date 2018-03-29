@@ -92,6 +92,7 @@ function processGet(request:any,response:any,args:any,type:string, contentType:a
             if(request.headers["content-length"]){
                 //the difference
                 body = BodyParser.parse(request);
+                Object.defineProperty(request,"body",{ value : body.getData(), writable:true });
                 newArguments.push(body);
             }
             if(async){
@@ -126,6 +127,7 @@ function process(request:any,response:any,args:any,type:string, contentType:any,
             if(request.headers["content-length"]){
                 //the difference
                 body = await BodyParser.parse(request);
+                Object.defineProperty(request,"body",{ value : body.getData(), writable:true });
                 newArguments.push(body);
             }
             if(async){

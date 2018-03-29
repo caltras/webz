@@ -16,10 +16,7 @@ export class SessionHelper{
     }
     setUser(request:any,user:User){
         this.properties.push("user");
-        let u = new User();
-        u.user = user.user;
-        u.password = user.password;
-        return request[this.options.cookieName].user = u;
+        return request[this.options.cookieName].user = user;
     }
     getAuthenticateUser(request:any):User{
         return request[this.options.cookieName].user;

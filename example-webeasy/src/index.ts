@@ -3,11 +3,14 @@ import { WebeasyBootStrap } from 'webeasy';
 import {default as config} from './config';
 import * as cluster from 'cluster';
 import * as os from 'os';
+import { Login } from './security/login';
 
 config.base_url = base_url;
 var web = new WebeasyBootStrap(config);
 
 (async ()=> {
+    
+    web.addLoginHandler(new Login());
     await web.create();
     web.listen();
 })();
