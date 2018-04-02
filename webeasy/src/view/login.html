@@ -29,8 +29,12 @@
                                     <span></span>
                                     Login
                                 </button>
-                                
                             </div>
+                            {{#if flashMessage.error }}
+                                <div class="form-group">
+                                    <div class="msg-error">{{flashMessage.error}}</div>
+                                </div>
+                            {{/if}}
                             <div class="form-group">
                                 <div class="container-label"></div>
                                 <div>

@@ -6,6 +6,7 @@ var config = {
     controllers: 'controllers',
     authentication:{
         custom:false,
+        passwordRole:/.+/
     },
     cors: {
         enabled:false,

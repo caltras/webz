@@ -15,7 +15,7 @@ import { AbstractFilter } from "./filters";
 import { ConfigurationHelper } from "./helpers/configuration.helper";
 import * as sessions from 'client-sessions';
 import {OptionsSession, SessionHelper} from './helpers/session.helper';
-import { LoginHandlerAbstract, LogindHelper } from "./security/login.handler";
+import { LoginHandlerAbstract, LoginHelper } from "./security/login.handler";
 
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
@@ -47,7 +47,7 @@ export class WebeasyBootStrap{
         ConfigurationHelper.getInstance().setConfiguration(this.config);
     }
     addLoginHandler(handler:LoginHandlerAbstract){
-        LogindHelper.getInstance().setHandle(handler);
+        LoginHelper.getInstance().setHandle(handler);
     }
     addFilters(filter:AbstractFilter|AbstractFilter[]){
         filterHelper.addFilter(filter);

@@ -35,6 +35,18 @@ export class SessionHelper{
     getProperty(request:any,p:string){
         return request[this.options.cookieName][p];
     }
+    setFlashMessage(request:any,msg:string,type:string='info'){
+        request[this.options.cookieName].flash = request[this.options.cookieName].flash || {};
+        request[this.options.cookieName].flash[type]=msg;
+    }
+    static getFlashMessage(request:any,type?:string){
+        request[SessionHelper.getInstance().options.cookieName].flash = request[SessionHelper.getInstance().options.cookieName].flash || {};
+        if(type){
+            return request[SessionHelper.getInstance().options.cookieName].flash[type];
+        }else{
+            return request[SessionHelper.getInstance().options.cookieName].flash;
+        }
+    }
 }
 export class OptionsSession implements SessionOptions{
     secret = 'QEviN7VGszXX';
