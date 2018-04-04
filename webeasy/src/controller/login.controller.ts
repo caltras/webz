@@ -20,7 +20,7 @@ export class LoginController extends BaseController{
     }
     @Post({url:"/signup",async:true})
     public signup(request:ServerRequest,response:ServerResponse,body:FormParameter){
-        return LoginHelper.signup(request,response,body.getData());
+        return LoginHelper.signup(request,response,new User(body.getData()));
     }
     @Post({url:"/recovery"})
     public recovery(request:ServerRequest,response:ServerResponse,body:FormParameter){
