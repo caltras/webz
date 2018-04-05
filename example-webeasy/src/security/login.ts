@@ -12,6 +12,8 @@ u.user = 'abc'
 u.token = crypto.randomBytes(64).toString('hex');
 users.push(u);
 
+export { users }
+
 export class Login extends LoginHandlerAbstract{
     
     login(request:ServerRequest,response:ServerResponse,user:User):Promise<any>{

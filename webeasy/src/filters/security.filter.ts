@@ -5,6 +5,8 @@ import { ConfigurationHelper} from '../helpers/configuration.helper';
 import { HtmlEngineFactory } from "../helpers/html.engine.helper";
 import { SessionHelper } from "../helpers/session.helper";
 import { User } from "../security/user";
+import { AbstractTokenAuthentication } from '../security/token.authentication';
+import * as Path from 'path';
 
 @Filter()
 @Order(-1)
@@ -43,7 +45,19 @@ export class Security extends SecurityInterface{
         this.next(request,response);
     }
     isAuthenticate(request:ServerRequest, response:ServerResponse):boolean{
+        let token:any = request.headers["authorization"];
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
+        let tokenHandler = ConfigurationHelper.getInstance().getProperty('authentication').tokenHandler;
+        if(!user && token && tokenHandler){
+            try{
+                let Handler:any = require(Path.relative(__dirname,tokenHandler));
+                let handle:AbstractTokenAuthentication = new Handler();
+                user = handle.authenticate(token,request);
+            }catch(e){
+                console.log(e);
+                return false;
+            }
+        }
         return !!user;
     }
     isAllowed(request:ServerRequest, response:ServerResponse):boolean{
