@@ -9,7 +9,7 @@ let users:Array<User> = new Array<User>();
 let u = new User();
 u.password = crypto.createHash('md5').update('123').digest('hex');
 u.user = 'abc'
-u.token = crypto.randomBytes(64).toString('hex');
+u.token = 'abc123'//crypto.randomBytes(64).toString('hex');
 users.push(u);
 
 export { users }
