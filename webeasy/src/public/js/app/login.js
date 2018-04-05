@@ -1,5 +1,5 @@
-(()=>{
-    var LoginModule = ()=>{
+((messageModule)=>{
+    var LoginComponent = ()=>{
         var self = this;
         self.btnSignup = document.getElementsByClassName('btn-signup')[0];
         self.btnCancel = document.getElementsByClassName('btn-cancel')[0];
@@ -23,28 +23,60 @@
                 self.flipper.classList.toggle('hover');
             };
             self.btnCancel.onclick= (event)=>{
+                self.signupForm.reset();
                 self.flipper.classList.toggle('hover');
             };
         }
         beforeSubmitLogin = (form)=>{
-            return form.elements.user.value 
-                    && form.elements.password.value 
-                    && self.passwordRole.test(form.elements.password.value);
+            var isValid = true;
+            if(!form.elements.user.value){
+                isValid = false;
+                messageModule.messageComponent.error('User is required!');
+            }
+            if(!self.passwordRole.test(form.elements.password.value)){
+                isValid = false;
+                messageModule.messageComponent.error('The password is invalid!');
+            }
+            if(isValid){
+                messageModule.messageComponent.info('Let\'s Go!');
+            }
+            return isValid;
         }
         beforeSubmitSignup = (form)=>{
-            return form.elements.user.value 
-                    && form.elements.name.value
-                    && self.confirmPassword(form.elements.password.value,form.elements.conf_password.value) 
-                    && self.passwordRole.test(form.elements.password.value);
+            var isValid = true;
+            if(!form.elements.user.value){
+                isValid = false;
+                messageModule.messageComponent.error('User is required!');
+            }
+            if(!form.elements.name.value){
+                isValid = false;
+                messageModule.messageComponent.error('Name is required!');
+            }
+            if(!self.confirmPassword(form.elements.password.value,form.elements.conf_password.value)){
+                isValid = false;
+                messageModule.messageComponent.error('The password is different to confirmation!');
+            }
+            if(!self.passwordRole.test(form.elements.password.value)){
+                isValid = false;
+                messageModule.messageComponent.error('The password is invalid!');
+            }
+            if(isValid){
+                messageModule.messageComponent.info('Let\'s Go!');
+            }
+            return isValid;
         }
         
         confirmPassword = (password, confirmation)=>{
             return password === confirmation;
         }
-        onInit = ()=>{
-            self.addEvents();
-        }
         return self;
+    }
+    var LoginModule = (loginComponent)=>{
+        onInit = ()=>{
+            loginComponent.addEvents();
+            return this;
+        } 
+        return this;
     };
-    LoginModule().onInit();
-})();
+    LoginModule(LoginComponent()).onInit();
+})(window.MessageModule);

@@ -47,7 +47,6 @@ export class Login extends LoginHandlerAbstract{
         })
     }
     private cryptoPassword(pass:string){
-        console.log(pass);
         return crypto.createHash('md5').update(pass).digest('hex');
     }
     private generateToken(){
