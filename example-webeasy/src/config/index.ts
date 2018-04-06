@@ -6,8 +6,10 @@ export default {
         tokenHandler:'security/token.authentication'
     },
     filter:{
-        exceptions:['/hello/'],
-        filters:['filters/test.filter']
+        filters:['filters/test.filter'],
+        security:{
+            exceptions: ['/hello']
+        }
     },
     view: {
         engine: 'handlebars',

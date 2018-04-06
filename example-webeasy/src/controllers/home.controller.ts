@@ -13,10 +13,14 @@ class HomeController extends BaseController{
 
     @Inject() public service:Service;
 
+    @Get({ url: "/hello"})
+    public hello2(request:IncomingMessage,response:ServerResponse){
+        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
+        return "Hello "+user.user;
+    }
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
-        console.log(SessionHelper.getInstance().getProperty(request,"last_visited"));
         return "Hello "+user.user;
     }
     @Get({ url: "/html"})
