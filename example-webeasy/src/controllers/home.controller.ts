@@ -7,16 +7,17 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import {SessionHelper} from 'webeasy/helpers/session.helper';
 import { User } from 'webeasy/security/user';
+import { Security, SecurityAttribute } from 'webeasy/decorators/security.decorator';
 
 @Controller("/")
 class HomeController extends BaseController{
 
     @Inject() public service:Service;
 
+    @Security(SecurityAttribute.permitAll)
     @Get({ url: "/hello"})
     public hello2(request:IncomingMessage,response:ServerResponse){
-        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
-        return "Hello "+user.user;
+        return 'hello';
     }
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){

@@ -17,7 +17,8 @@ export class FilterHelper{
     private static instance:FilterHelper;
     public filters:any[] = [];
     public rootFilter:AbstractFilter;
-    public exceptions:any = {};
+    public exceptions:any = [];
+    private urlExceptions:any = {}
     public securityFilter:any = {};
     public static getInstance():FilterHelper{
         if(!FilterHelper.instance){
@@ -81,7 +82,7 @@ export class FilterHelper{
         }
     }
     public async doFilter(req:ServerRequest,resp:ServerResponse,config:any){
-        if(!this.checkExceptions(config.filter.exceptions,req.url)){
+        if(!this.checkExceptions(req.url)){
             debug("Starting process filter...");
             this.rootFilter.doFilter(req,resp);
             debug("Finishing process filter.");
@@ -96,37 +97,39 @@ export class FilterHelper{
             }
         }
     }
-    public checkExceptions(exceptions:string[],url:string){
-        if(this.exceptions.hasOwnProperty(url)){ 
-            return this.exceptions[url];
-        }
+    public processUrlAsRegExp(e:string){
         let characters = {
             "[*]":"(.*)?",
         }
+        let isNotAnyCharacterStart = e.charAt(0) !== "*";
+        let isNotAnyCharacterFinal = e.charAt(e.length-1) !== "*";
+        if(isNotAnyCharacterStart){
+            e ="^"+e;
+        }
+        if(isNotAnyCharacterFinal){
+            e+="$"; 
+        }
+        Lodash.each(characters,(v,k)=>{
+            let expression = new RegExp(k,"g");
+            e = e.replace(expression,v);
+        });
+        return e;
+    }
+    public checkExceptions(url:string){
+        if(this.urlExceptions.hasOwnProperty(url)){ 
+            return this.urlExceptions[url];
+        }
+        
         let isException = false;
-        let newExceptions = exceptions.map((e:string)=>{
-            let isNotAnyCharacterStart = e.charAt(0) !== "*";
-            let isNotAnyCharacterFinal = e.charAt(e.length-1) !== "*";
-            if(isNotAnyCharacterStart){
-                e ="^"+e;
-            }
-            if(isNotAnyCharacterFinal){
-                e+="$"; 
-            }
-            Lodash.each(characters,(v,k)=>{
-                let expression = new RegExp(k,"g");
-                e = e.replace(expression,v);
-            });
-            return e;
-        })
-        for(let i=0;i<newExceptions.length;i++){
-            debug("Testing %s to url %s",newExceptions[i],url);
-            isException = new RegExp(newExceptions[i]).test(url);
-            this.exceptions[url] = isException;
+
+        for(let i=0;i<this.exceptions.length;i++){
+            debug("Testing %s to url %s",this.exceptions[i],url);
+            isException = new RegExp(this.exceptions[i]).test(url);
+            this.urlExceptions[url] = isException;
             if(isException){              
                 return isException;
             }
         }
-        return isException;
+        return isException;    
     }
 }

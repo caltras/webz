@@ -8,6 +8,6 @@ export abstract class SecurityInterface extends AbstractFilter{
     abstract isAllowed(request:ServerRequest,response:ServerResponse):boolean;
     checkSecurityexceptions(request:ServerRequest){
         let helperInstance = FilterHelper.getInstance();
-        return helperInstance.checkExceptions(helperInstance.securityFilter,request.url);
+        return helperInstance.checkExceptions(request.url);
     }
 }

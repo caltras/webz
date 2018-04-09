@@ -35,6 +35,7 @@ var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
+
         descriptor.value = function(args:any){
             
             let reflectionClass = Reflect.getMetadata(SINGLETON_CLASS,target.constructor);

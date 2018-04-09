@@ -8,7 +8,6 @@ export default {
     filter:{
         filters:['filters/test.filter'],
         security:{
-            exceptions: ['/hello']
         }
     },
     view: {

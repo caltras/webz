@@ -34,7 +34,7 @@ export class WebeasyBootStrap{
         this.urlParser = urlModule;
         this.servers = {};
         Configuration.getInstance().getConfig().base_url = cfg.base_url;
-        cfg.filter = cfg.filters || {};
+        cfg.filter = cfg.filter || {};
         cfg.filter.filters = Lodash.map(cfg.filter.filters,(f:string)=>{
             return Path.join(cfg.base_url,f);
         });
@@ -77,6 +77,9 @@ export class WebeasyBootStrap{
         name = name || "default";
         await controllerHelper.load(this.config);
         filterHelper.securityFilter = this.config.filter.security;
+
+        filterHelper.exceptions = filterHelper.exceptions.concat(this.config.filter.security.exceptions.map(filterHelper.processUrlAsRegExp));
+
         this.cors();
         this.loadFilters();
         this.loadTemplates();
