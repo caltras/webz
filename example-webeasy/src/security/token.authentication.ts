@@ -1,4 +1,5 @@
 import { AbstractTokenAuthentication } from "webeasy/security/abstract.token.authentication";
+import { AuthenticationInterface } from "webeasy/security/authentication,interface";
 import { User } from "webeasy/security/user";
 import * as login from "../security/login";
 import * as Lodash from 'lodash';
@@ -12,7 +13,7 @@ class TokenAuthentication extends AbstractTokenAuthentication{
     authenticate(token:string,request:any):User{
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
         if(!user){
-            let user:User = this.getUserByToken(token);
+            let user:User = this.getUserByToken(this.defineAuthentication(token).value);
             if(user){
                 SessionHelper.getInstance().setUser(request,user);
                 return user;
@@ -22,6 +23,11 @@ class TokenAuthentication extends AbstractTokenAuthentication{
         }else{
             return user;
         }    
+    }
+    defineAuthentication(token:string):AuthenticationInterface{
+        let splitToken:string[] = token.split(" ");
+        let tokenObject:any  = {type:splitToken[0],token:splitToken[1]};
+        return tokenObject;
     }
 }
 
