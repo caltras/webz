@@ -6,7 +6,7 @@ export const SecurityAttribute = {
     role:'ROLE'
 }
 
-export const Security = (params:string)=>{
+export const Security = (params:string,role?:string[]|string)=>{
     return (target:any, key:string)=>{
         let methodParams:any = Reflect.getMetadata('design:type:get',target.constructor,key);
         params = params || SecurityAttribute.permitAll;

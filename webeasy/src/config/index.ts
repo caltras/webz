@@ -4,10 +4,17 @@ var config = {
     port: 3000,
     base_url:'../',
     controllers: 'controllers',
+    session:{
+        enabled:true,
+        secret : 'QEviN7VGszXX',
+        name : 'webZSession',
+        duration : Number(60*1000)
+    },
     authentication:{
         custom:false,
         passwordRole:/.+/,
-        tokenHandler:false
+        tokenHandler:false,
+        enabled:true
     },
     cors: {
         enabled:false,

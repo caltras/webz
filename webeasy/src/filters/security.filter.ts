@@ -51,7 +51,7 @@ export class Security extends SecurityInterface{
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
         let tokenHandler = ConfigurationHelper.getInstance().getProperty('authentication').tokenHandler;
         if(!user && token && tokenHandler){
-            console.log('Searching user '+token);
+            this.logger('Searching user '+token);
             try{
                 let base:string = ConfigurationHelper.getInstance().getProperty('base_url');
                 let Handler:any = require(Path.join(base,tokenHandler));

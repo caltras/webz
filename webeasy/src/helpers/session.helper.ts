@@ -1,12 +1,14 @@
 import {RequestHandler,SessionOptions} from 'client-sessions';
 import { ServerRequest } from 'http';
 import { User } from '../security/user';
+import { ConfigurationHelper } from './configuration.helper';
 export class SessionHelper{
     
     private static instance:SessionHelper;
     public session:RequestHandler;
     public options:SessionOptions;
     public properties:string[] = [];
+    public enabled:boolean = ConfigurationHelper.getInstance().getConfiguration().session.enabled;
 
     static getInstance():SessionHelper{
         if(!SessionHelper.instance){
@@ -15,11 +17,17 @@ export class SessionHelper{
         return SessionHelper.instance;
     }
     setUser(request:any,user:User){
-        this.properties.push("user");
-        return request[this.options.cookieName].user = user;
+        if(this.enabled){
+            this.properties.push("user");
+            return request[this.options.cookieName].user = user;
+        }
     }
     getAuthenticateUser(request:any):User{
-        return request[this.options.cookieName].user;
+        if(this.enabled){
+            return request[this.options.cookieName].user;
+        }else{
+            return null;
+        }
     }
     invalidateSession(request:any){
         this.properties.forEach((p)=>{
@@ -27,30 +35,45 @@ export class SessionHelper{
         });
     }
     addProperty(request:any,p:string,value:any){
-        if(this.properties.indexOf(p) ==-1){
-            this.properties.push(p);
+        if(this.enabled){
+            if(this.properties.indexOf(p) ==-1){
+                this.properties.push(p);
+            }
+            request[this.options.cookieName][p] = value;
         }
-        request[this.options.cookieName][p] = value;
     }
     getProperty(request:any,p:string){
-        return request[this.options.cookieName][p];
+        if(this.enabled){
+            return request[this.options.cookieName][p];
+        }else{
+            return null;
+        }
     }
     setFlashMessage(request:any,msg:string,type:string='info'){
-        request[this.options.cookieName].flash = request[this.options.cookieName].flash || {};
-        request[this.options.cookieName].flash[type]=msg;
+        if(this.enabled){
+            request[this.options.cookieName].flash = request[this.options.cookieName].flash || {};
+            request[this.options.cookieName].flash[type]=msg;
+        }
     }
     static getFlashMessage(request:any,type?:string){
-        request[SessionHelper.getInstance().options.cookieName].flash = request[SessionHelper.getInstance().options.cookieName].flash || {};
-        if(type){
-            return request[SessionHelper.getInstance().options.cookieName].flash[type];
+        if(SessionHelper.getInstance().enabled){
+            request[SessionHelper.getInstance().options.cookieName].flash = request[SessionHelper.getInstance().options.cookieName].flash || {};
+            if(type){
+                return request[SessionHelper.getInstance().options.cookieName].flash[type];
+            }else{
+                return request[SessionHelper.getInstance().options.cookieName].flash;
+            }
         }else{
-            return request[SessionHelper.getInstance().options.cookieName].flash;
+            return null;
         }
     }
 }
 export class OptionsSession implements SessionOptions{
-    secret = 'QEviN7VGszXX';
-    cookieName = 'webZSession';
-    //duration = Number(24*60*60*1000);
-    duration = Number(60*1000);
+    config = ConfigurationHelper.getInstance().getConfiguration();
+    secret = this.config.session.secret;
+    cookieName = this.config.session.name;
+    duration = this.config.session.duration;
+    isEnabled(){
+        return this.config.session.enabled;
+    }
 }

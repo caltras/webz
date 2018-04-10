@@ -95,15 +95,19 @@ export class WebeasyBootStrap{
         SessionHelper.getInstance().session = sessions(SessionHelper.getInstance().options);
 
         this.servers[name] = http.createServer((req,res)=>{
-            //AUTHENTICATION
             //URL-PARSER
-            SessionHelper.getInstance().session(req,res,()=>{
+            let executeStack = ()=>{
                 stack.forEach(s=>{
                     if(!res.finished){
                         s.method.call(s.class,req,res,this.config);
                     }
                 });
-            });
+            }
+            if(this.config.session.enabled && (this.config.filter.enabled || this.config.authentication.enabled)){
+                SessionHelper.getInstance().session(req,res,executeStack);
+            }else{
+                executeStack();
+            }
             
         });
 
