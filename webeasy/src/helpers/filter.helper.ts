@@ -20,6 +20,8 @@ export class FilterHelper{
     public exceptions:any = [];
     private urlExceptions:any = {}
     public securityFilter:any = {};
+    public urlRoles:any = {};
+
     public static getInstance():FilterHelper{
         if(!FilterHelper.instance){
             FilterHelper.instance = new FilterHelper();
@@ -117,7 +119,7 @@ export class FilterHelper{
     }
     public checkExceptions(url:string){
         if(this.urlExceptions.hasOwnProperty(url)){ 
-            return this.urlExceptions[url];
+            return this.urlExceptions[url]; //|| this.urlRoles.hasOwnProperty(url);
         }
         
         let isException = false;

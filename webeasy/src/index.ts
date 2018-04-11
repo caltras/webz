@@ -103,6 +103,7 @@ export class WebeasyBootStrap{
                     }
                 });
             }
+            debug("HTTP/"+req.httpVersion+" - "+req.method+" : "+req.url);
             if(this.config.session.enabled && (this.config.filter.enabled || this.config.authentication.enabled)){
                 SessionHelper.getInstance().session(req,res,executeStack);
             }else{

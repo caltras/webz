@@ -17,8 +17,8 @@ export class SessionHelper{
         return SessionHelper.instance;
     }
     setUser(request:any,user:User){
+        this.properties.push("user");
         if(this.enabled){
-            this.properties.push("user");
             return request[this.options.cookieName].user = user;
         }
     }
@@ -33,6 +33,7 @@ export class SessionHelper{
         this.properties.forEach((p)=>{
             delete request[this.options.cookieName][p];
         });
+        request[this.options.cookieName].reset(); 
     }
     addProperty(request:any,p:string,value:any){
         if(this.enabled){

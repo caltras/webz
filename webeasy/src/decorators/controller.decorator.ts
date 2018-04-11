@@ -156,6 +156,10 @@ function process(request:any,response:any,args:any,type:string, contentType:any,
 };
 function processResponse(result:any,response:any,type:string,contentType:any){
     if(!response.finished){
+        response.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        response.setHeader('Expires', '-1');
+        response.setHeader('Pragma', 'no-cache');
+        
         if([CONNECT_KEY,HEAD_KEY,PATCH_KEY].indexOf(type)===-1){
             response.writeHead(200,{'Content-type': contentType});
             response.end(Helper.parse(result,contentType));

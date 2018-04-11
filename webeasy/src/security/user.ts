@@ -4,7 +4,7 @@ export class User{
     public token:string;
     public user:string;
     private pass:string;
-    public roles:string[];
+    public roles:string[]=[];
 
     constructor(data?:any){
         if(data){
