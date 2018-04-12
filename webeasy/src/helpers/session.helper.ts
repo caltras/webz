@@ -68,6 +68,9 @@ export class SessionHelper{
             return null;
         }
     }
+    getSession(request:any){
+        return request[this.options.cookieName];
+    }
 }
 export class OptionsSession implements SessionOptions{
     config = ConfigurationHelper.getInstance().getConfiguration();

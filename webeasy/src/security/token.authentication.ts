@@ -1,4 +1,4 @@
-import { AuthenticationInterface } from "./authentication,interface";
+import { AuthenticationInterface } from "./authentication.interface";
 
 export class TokenAuthentication implements AuthenticationInterface{
     type:string;
@@ -8,6 +8,7 @@ export class TokenAuthentication implements AuthenticationInterface{
     constructor(type:string,value:string){
         this.type = type;
         this.value = value;
+        this.token = value;
     }
     getCredentials():any{
         return this.value;

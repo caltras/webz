@@ -115,7 +115,10 @@ function processGet(request:any,response:any,args:any,type:string, contentType:a
                 resolve();
             }
         }catch(e){
+            response.statusCode = 505;
+            response.end();
             reject(e);
+            
         }
     });
 }
@@ -150,7 +153,10 @@ function process(request:any,response:any,args:any,type:string, contentType:any,
                 resolve();
             }
         }catch(e){
+            response.statusCode = 505;
+            response.end();
             reject(e);
+            
         }
     });
 };

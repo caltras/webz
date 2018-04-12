@@ -1,9 +1,9 @@
-import { AuthenticationInterface } from "./authentication,interface";
+import { AuthenticationInterface } from "./authentication.interface";
 import { BasicAuthentication } from "./basic.authentication";
 import { TokenAuthentication } from "./token.authentication";
 
 export class AuthenticationFactory{
-    create(type:string,value:string):AuthenticationInterface{
+    static create(type:string,value:string):AuthenticationInterface{
         switch(type.toLowerCase()){
             case 'token':
             case 'bearer':

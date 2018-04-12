@@ -1,4 +1,4 @@
-import { AuthenticationInterface } from "./authentication,interface";
+import { AuthenticationInterface } from "./authentication.interface";
 
 export class BasicAuthentication implements AuthenticationInterface{
     type:string;
