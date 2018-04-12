@@ -119,7 +119,7 @@ export class FilterHelper{
     }
     public checkExceptions(url:string){
         if(this.urlExceptions.hasOwnProperty(url)){ 
-            return this.urlExceptions[url]; //|| this.urlRoles.hasOwnProperty(url);
+            return this.urlExceptions[url];
         }
         
         let isException = false;

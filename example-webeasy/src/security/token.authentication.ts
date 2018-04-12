@@ -8,12 +8,13 @@ import { SessionHelper } from "webeasy/helpers/session.helper";
 
 class TokenAuthentication extends AbstractTokenAuthentication{
 
-    authenticateByToken(token:string):User{
+    authenticateByToken(token:string):User{5
         return Lodash.find(login.users,{token:token});
     }
     getUserByUserAndPassword(authInterface:BasicAuthentication):User{
-        let pass:string = crypto.createHash('md5').update(authInterface.password).digest('hex');
-        let user:User = Lodash.find(login.users,{user:authInterface.user,password:pass});
+        let credentials:any = authInterface.getCredentials();
+        let pass:string = crypto.createHash('md5').update(credentials.password).digest('hex');
+        let user:User = Lodash.find(login.users,{user:credentials.user,pass:pass});
         if(user){
             return user;
         }else{

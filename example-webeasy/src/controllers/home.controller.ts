@@ -29,6 +29,11 @@ class HomeController extends BaseController{
     public manager(request:IncomingMessage,response:ServerResponse){
         return 'manager';
     }
+    @Security(SecurityAttribute.role,['!MANAGER'])
+    @Get({ url: "/manager2"})
+    public manager2(request:IncomingMessage,response:ServerResponse){
+        return 'manager [!ADMIN, MANAGER]';
+    }
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);

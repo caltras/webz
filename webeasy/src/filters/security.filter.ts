@@ -87,7 +87,7 @@ export class Security extends SecurityInterface{
                 let handle:AbstractTokenAuthentication = new Handler();
                 user = handle.authenticate(token,request);
             }catch(e){
-                return false;
+                throw new NotAuthenticateException();
             }
         }
         if(!user){
@@ -102,7 +102,7 @@ export class Security extends SecurityInterface{
             allowed =false;
             user.roles.every((r:string,index:number)=>{
                 if(!allowed){
-                    allowed = FilterHelper.getInstance().urlRoles[request.url].indexOf(r) > -1;
+                    allowed = FilterHelper.getInstance().urlRoles[request.url].indexOf(r) > -1 && FilterHelper.getInstance().urlRoles[request.url].indexOf("!"+r) === -1;
                     return true;
                 }
             });
