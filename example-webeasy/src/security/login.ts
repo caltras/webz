@@ -10,7 +10,7 @@ let u = new User();
 u.password = crypto.createHash('md5').update('123').digest('hex');
 u.user = 'abc'
 u.token = 'abc123'//crypto.randomBytes(64).toString('hex');
-u.roles.push('ADMIN');
+u.roles.push('MANAGER','ADMIN');
 users.push(u);
 
 export { users }

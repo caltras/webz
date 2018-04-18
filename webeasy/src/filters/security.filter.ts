@@ -95,20 +95,47 @@ export class Security extends SecurityInterface{
         }
         return !!user;
     }
+    checkNegativeRoles(url:string, userRoles:string[]):boolean{
+        let allowed =true;
+        //[!MANAGER]
+        let negativeRolesInUrl = FilterHelper.getInstance().urlRoles[url].filter((r:string)=>{
+            return r.indexOf("!") > -1;
+        }).map((r:string)=>{
+            return r.replace("!","");
+        });
+        if(negativeRolesInUrl.length>0){
+            //[MANAGER]
+            userRoles.forEach((r:string,index:number)=>{
+                if(allowed && negativeRolesInUrl.indexOf(r) > -1){
+                    allowed=false;
+                    return true;
+                }else{
+                    return false;
+                }
+            });    
+        }
+        return allowed;
+    }
+    checkPositive(url:string,userRoles:string[]):boolean{
+        let allowed:boolean = false;
+        userRoles.forEach((r:string,index:number)=>{
+            if(!allowed){
+                allowed = FilterHelper.getInstance().urlRoles[url].indexOf(r) > -1;
+                return true;
+            }else{
+                return false;
+            }
+        });
+        return allowed;
+    }
     isAllowed(request:ServerRequest, response:ServerResponse):boolean{
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
         let allowed=true;
         if(FilterHelper.getInstance().urlRoles[request.url]){
-            allowed =false;
-            user.roles.every((r:string,index:number)=>{
-                if(!allowed){
-                    allowed = FilterHelper.getInstance().urlRoles[request.url].indexOf(r) > -1 && FilterHelper.getInstance().urlRoles[request.url].indexOf("!"+r) === -1;
-                    return true;
-                }
-            });
-        }
-        if(!allowed){
-            throw new NotAllowedException();
+            allowed = this.checkPositive(request.url,user.roles) && this.checkNegativeRoles(request.url,user.roles);
+            if(!allowed){
+                throw new NotAllowedException();
+            }
         }
         return allowed;
     }
