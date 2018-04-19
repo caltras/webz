@@ -42,7 +42,8 @@ var config = {
     error: {
         engine: 'handlebars',
         "404": 'view/error/404.page.html',
-        "403": 'view/error/403.page.html'
+        "403": 'view/error/403.page.html',
+        "500": 'view/error/500.page.html'
     },
     websocket: {
         enabled:false

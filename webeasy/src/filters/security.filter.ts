@@ -39,6 +39,7 @@ export class Security extends SecurityInterface{
     }
     doFilter(request:ServerRequest, response:ServerResponse){
         try{
+            
             if(!super.checkSecurityexceptions(request)){
                 this.isAuthenticate(request,response);
                 this.isAllowed(request,response);
@@ -71,7 +72,7 @@ export class Security extends SecurityInterface{
             response.statusCode = 500;
             let engine = HtmlEngineFactory.create(this.configurationHelper.getConfiguration());
             let errorCfg = this.configurationHelper.getProperty("error");
-            var page = engine.render((this.configurationHelper.getProperty("base_url") || __dirname),errorCfg["500"],{error: I18nHelper.getProperty("error")["500"]});
+            var page = engine.render((this.configurationHelper.getProperty("base_url") || __dirname),errorCfg["500"],{message:e.message, error: I18nHelper.getProperty("error")["500"]});
             response.end(page);
             return;
         }
