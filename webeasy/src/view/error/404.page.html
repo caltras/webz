@@ -3,32 +3,26 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
-    <link href="/home/claudio/Documents/projects/webeasy/webeasy/src/public/css/style.css" rel="stylesheet">
-    <link href="/home/claudio/Documents/projects/webeasy/webeasy/src/public/css/error.css" rel="stylesheet">
-    <link href="/home/claudio/Documents/projects/webeasy/webeasy/src/public/lib/animate/animate.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,500,700" rel="stylesheet">
+    <link href="/public/css/style.css" rel="stylesheet">
+    <link href="/public/css/error.css" rel="stylesheet">
+    <link href="/public/lib/animate/animate.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="page">
         <div class="container">
             <div class="error-container">
-                <div class="error-code">
+                <div class="error-code animated rubberBand">
                     <label class="code">
                         404
-                    </label> 
+                    </label>
                     <div class="error-title">
-                        Page not Found
+                        {{error}}
                     </div>
-                </div>
-                <div class="error-message">
-                    {{message}}
-                    <br>
-                    Stack: 
-                    <br>
-                    <code>
-                        {{stack}}
-                    </code>
+                    <div class="error-message">
+                        {{message}}
+                    </div>
                 </div>
             </div>
         </div>

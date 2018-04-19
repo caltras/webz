@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,500,700" rel="stylesheet">
     <link href="/public/css/style.css" rel="stylesheet">
     <link href="/public/css/error.css" rel="stylesheet">
     <link href="/public/lib/animate/animate.css" rel="stylesheet">
@@ -12,16 +12,17 @@
 <body>
     <div class="page">
         <div class="container">
-            <div class="error-container background-not-allowed">
-                <div class="error-code">
-                    <label class="code">
+            <div class="error-container">
+                <div class="error-code animated rubberBand">
+                    <label class="code denied">
                         403
                     </label> 
                     <div class="error-title">
-                        Access Forbidden
+                        {{error}}
                     </div>
-                </div>
-                <div class="error-message">
+                    <div class="error-message">
+                        You do not have permission to view this resource
+                    </div>
                 </div>
             </div>
         </div>

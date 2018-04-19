@@ -6,36 +6,38 @@
     flex: 1;
 }
 .error-container{
-    width: 80%;
-    height: 80%;
-    border: solid 1px #ccc;
+    width: 100%;
+    height: 100%;
     padding: 20px;
-    border-radius: 4px;
     background-color: #fefefe;
-    box-shadow: 5px 5px 20px 1px #b7b7b7;
+    /*border: solid 1px #ccc;
+    border-radius: 4px;
+    box-shadow: 5px 5px 20px 1px #b7b7b7;*/
     display: flex;
     align-items: center;
     justify-content: center;
-}
-.error-container.background-not-allowed{
-    background-image: url('https://www.iconspng.com/images/worn-forbidden-sign/worn-forbidden-sign.jpg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 360px;
+    overflow: hidden;
 }
 .error-container .error-code{
-    text-align: center;
+    text-align: justify;
     background-color: rgba(255,255,255,0.7);
     padding: 100px;
 }
 .error-container .error-code .code{
-    font-size: 6vw;
+    font-size: 15vw;
     font-weight: bold;
+    color:#ddd;
+    font-weight: 100;
+}
+.error-container .error-code .code.denied{
+    color:#ff8080;
 }
 .error-container .error-code .error-title{
-    font-size: 4vw;
+    font-size: 3.5vw;
+    text-transform: uppercase;
 }
+.error-container .error-code .error-title .error-message,
 .error-container .error-message{
     font-style: italic;
-    font-size: 12px;
+    font-size: 1.2vw;
 }

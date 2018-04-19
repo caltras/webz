@@ -9,6 +9,7 @@ import { AbstractTokenAuthentication } from '../security/abstract.token.authenti
 import * as Path from 'path';
 import * as debug from 'debug';
 import { FilterHelper } from "../helpers/filter.helper";
+import { I18nHelper } from "../i18n/i18n.helper";
 
 export class SecurityException extends Error{
     constructor(msg:string){
@@ -56,7 +57,7 @@ export class Security extends SecurityInterface{
                 response.statusCode = 403;
                 let engine = HtmlEngineFactory.create(this.configurationHelper.getConfiguration());
                 let errorCfg = this.configurationHelper.getProperty("error");
-                var page = engine.render((this.configurationHelper.getProperty("base_url") || __dirname),errorCfg["403"],{});
+                var page = engine.render((this.configurationHelper.getProperty("base_url") || __dirname),errorCfg["403"],{error: I18nHelper.getProperty("error")["403"]});
                 response.end(page);
                 return;
             }
@@ -70,7 +71,7 @@ export class Security extends SecurityInterface{
             response.statusCode = 500;
             let engine = HtmlEngineFactory.create(this.configurationHelper.getConfiguration());
             let errorCfg = this.configurationHelper.getProperty("error");
-            var page = engine.render((this.configurationHelper.getProperty("base_url") || __dirname),errorCfg["500"],{});
+            var page = engine.render((this.configurationHelper.getProperty("base_url") || __dirname),errorCfg["500"],{error: I18nHelper.getProperty("error")["500"]});
             response.end(page);
             return;
         }

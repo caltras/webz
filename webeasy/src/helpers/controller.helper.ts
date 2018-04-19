@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 import { MethodWrapper } from './method.wrapper';
 import { LoginController } from '../controller/login.controller';
 import { LogoutController } from '../controller/logout.controller';
+import { I18nHelper } from "../i18n/i18n.helper";
 
 export function parse(result:any,contentType:ContentType){
     if(contentType=== ContentType.APPLICATION_JSON){
@@ -186,7 +187,7 @@ export class ControllerHelper{
             }catch(e){
                 resp.statusCode = 404;
                 resp.writeHead(404,{'Content-type':ContentType.HTML});
-                resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
+                resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],{message:e.message,error:I18nHelper.getProperty("error")["404"]}));
             }
             resolve();
         });

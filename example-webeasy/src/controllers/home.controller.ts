@@ -29,10 +29,10 @@ class HomeController extends BaseController{
     public manager(request:IncomingMessage,response:ServerResponse){
         return 'manager';
     }
-    @Security(SecurityAttribute.role,['ADMIN','!MANAGER'])
+    @Security(SecurityAttribute.role,['ABC'])
     @Get({ url: "/manager2"})
     public manager2(request:IncomingMessage,response:ServerResponse){
-        return 'manager [!ADMIN, MANAGER]';
+        return 'manager [ABC]';
     }
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
