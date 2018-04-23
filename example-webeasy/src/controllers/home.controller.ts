@@ -13,6 +13,7 @@ import { Security, SecurityAttribute } from 'webeasy/decorators/security.decorat
 class HomeController extends BaseController{
 
     @Inject() public service:Service;
+    @Inject() public session:SessionHelper;
 
     @Security(SecurityAttribute.permitAll)
     @Get({ url: "/hello"})
@@ -31,12 +32,12 @@ class HomeController extends BaseController{
     }
     @Security(SecurityAttribute.role,['ABC'])
     @Get({ url: "/manager2"})
-    public manager2(request:IncomingMessage,response:ServerResponse){
+    public manager2(request:IncomingMessage,response:ServerResponse){   
         return 'manager [ABC]';
     }
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
-        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
+        let user:User = this.session.getAuthenticateUser(request);
         return "Hello "+user.user;
     }
     @Get({ url: "/html"})

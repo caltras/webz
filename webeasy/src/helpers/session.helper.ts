@@ -2,6 +2,9 @@ import {RequestHandler,SessionOptions} from 'client-sessions';
 import { ServerRequest } from 'http';
 import { User } from '../security/user';
 import { ConfigurationHelper } from './configuration.helper';
+import { Injectable } from '../decorators';
+
+@Injectable()
 export class SessionHelper{
     
     private static instance:SessionHelper;

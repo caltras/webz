@@ -58,19 +58,7 @@ var processRequest = (params:any,type:any)=>{
                 let request = args.request;
                 let response = args.response;
                 let body:any;
-                /**
-                 * ---------------------------------------------
-                 * BodyParser | Original method | result (Avg)  |
-                 * ----------------------------------------------
-                 *      0     |     0           | (GET) 33k RPS |
-                 * ----------------------------------------------
-                 *      1     |     0           | (GET) 31k RPS |
-                 * ----------------------------------------------
-                 *      0     |     1           | (GET) 24k RPS|
-                 * ----------------------------------------------
-                 *      1     |     1           | (GET) 20k RPS  |
-                 * ----------------------------------------------
-                 */
+
                 if(type === GET_KEY){
                     return processGet(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
                 }else{
