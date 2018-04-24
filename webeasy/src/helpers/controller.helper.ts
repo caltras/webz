@@ -4,6 +4,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
 import { MethodWrapper } from './method.wrapper';
+import { LoginController } from '../controller/login.controller';
+import { LogoutController } from '../controller/logout.controller';
+import { I18nHelper } from "../i18n/i18n.helper";
+
 export function parse(result:any,contentType:ContentType){
     if(contentType=== ContentType.APPLICATION_JSON){
         return JSON.stringify(result);
@@ -47,6 +51,19 @@ export enum ContentType{
     VIDEO_WEBM="video/webm"
     
 }
+export class ContentTypeHelper {
+
+    static getContentTypeBySufix(suffix:string):string{
+        let content:any = ContentType;
+        let type:string = ContentType.HTML;
+        Object.keys(content).forEach((key)=>{
+            if(content[key].indexOf(suffix) > -1){
+                type = content[key];
+            }
+        });
+        return type ;
+    }
+}
 export class HelperUtils{
     public static walkSync(dir:any, filelist:any = []):any{
         return fs.readdirSync(dir)
@@ -78,6 +95,13 @@ export class ControllerHelper{
         ControllerHelper.instance.cfg = cfg;
 
         let controllers:string[] = HelperUtils.getListFileController(cfg);
+        if(!cfg.authentication.custom){
+            this.registeredClass["login.controller"] = new LoginController("/login",HtmlEngineFactory.create(this.cfg));
+            this.mappingRoute(LoginController);
+            this.registeredClass["logout.controller"] = new LogoutController("/logout",HtmlEngineFactory.create(this.cfg));
+            this.mappingRoute(LogoutController);
+        }
+
         controllers.forEach(async (path)=>{
             var name_path:string = _.findLast(path.split("/")).replace(/(\.js|\.ts)/,"");
             if(!this.isReady() || !this.registeredClass.hasOwnProperty(name_path)){
@@ -146,7 +170,7 @@ export class ControllerHelper{
     public setReady(is:boolean){
         this.ready = is;
     }
-    public callRoute(req:any,resp:any){
+    public callRoute(req:any,resp:any, config?:any){
         new Promise((resolve,reject)=>{
             try{
                 if(!Object.keys(this.route[req.method]).length){
@@ -163,7 +187,7 @@ export class ControllerHelper{
             }catch(e){
                 resp.statusCode = 404;
                 resp.writeHead(404,{'Content-type':ContentType.HTML});
-                resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],e));
+                resp.end(HtmlEngineFactory.create(this.cfg).render(this.cfg.base_url,this.cfg.error["404"],{message:e.message,error:I18nHelper.getProperty("error")["404"]}));
             }
             resolve();
         });

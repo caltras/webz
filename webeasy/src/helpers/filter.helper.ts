@@ -3,6 +3,9 @@ import * as Path from 'path';
 import { AbstractFilter } from '../filters';
 import * as filterDebug from 'debug';
 import { ServerRequest, ServerResponse } from 'http';
+import * as Lodash from 'lodash';
+import { SessionHelper } from './session.helper';
+
 const debug = filterDebug("filter");
 
 export class FilterNotFoundException extends Error{
@@ -14,6 +17,11 @@ export class FilterHelper{
     private static instance:FilterHelper;
     public filters:any[] = [];
     public rootFilter:AbstractFilter;
+    public exceptions:any = [];
+    private urlExceptions:any = {}
+    public securityFilter:any = {};
+    public urlRoles:any = {};
+
     public static getInstance():FilterHelper{
         if(!FilterHelper.instance){
             FilterHelper.instance = new FilterHelper();
@@ -75,9 +83,55 @@ export class FilterHelper{
             this.filters.push(filter);
         }
     }
-    public async doFilter(req:ServerRequest,resp:ServerResponse){
-        debug("Starting process filter...");
-        this.rootFilter.doFilter(req,resp);
-        debug("Finishing process filter.");
+    public async doFilter(req:ServerRequest,resp:ServerResponse,config:any){
+        if(!this.checkExceptions(req.url)){
+            debug("Starting process filter...");
+            this.rootFilter.doFilter(req,resp);
+            debug("Finishing process filter.");
+        }else{
+            if(req.url === config.redirect.login && !!SessionHelper.getInstance().getAuthenticateUser(req)){
+                resp.writeHead(301,{
+                    Location: (config.redirect.welcome)
+                });
+                resp.end();
+            }else{
+                debug("%s is exception to filter",req.url);
+            }
+        }
+    }
+    public processUrlAsRegExp(e:string){
+        let characters = {
+            "[*]":"(.*)?",
+        }
+        let isNotAnyCharacterStart = e.charAt(0) !== "*";
+        let isNotAnyCharacterFinal = e.charAt(e.length-1) !== "*";
+        if(isNotAnyCharacterStart){
+            e ="^"+e;
+        }
+        if(isNotAnyCharacterFinal){
+            e+="$"; 
+        }
+        Lodash.each(characters,(v,k)=>{
+            let expression = new RegExp(k,"g");
+            e = e.replace(expression,v);
+        });
+        return e;
+    }
+    public checkExceptions(url:string){
+        if(this.urlExceptions.hasOwnProperty(url)){ 
+            return this.urlExceptions[url];
+        }
+        
+        let isException = false;
+
+        for(let i=0;i<this.exceptions.length;i++){
+            debug("Testing %s to url %s",this.exceptions[i],url);
+            isException = new RegExp(this.exceptions[i]).test(url);
+            this.urlExceptions[url] = isException;
+            if(isException){              
+                return isException;
+            }
+        }
+        return isException;    
     }
 }

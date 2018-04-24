@@ -1,5 +1,6 @@
 import { HtmlEngineInterface } from "../helpers/html.engine.helper";
 import * as Path from 'path';
+import { ServerResponse } from "http";
 
 export class BaseController{
     protected config:any;
@@ -30,5 +31,11 @@ export class BaseController{
     }
     render(file:string,data?:any):string{
         return this.template.render(Path.join(this.config.base_url,this.config.view.base),file,data);
+    }
+    redirect(url:string,response:ServerResponse){
+        response.writeHead(301,{
+            Location:url
+        });
+        response.end();
     }
 }

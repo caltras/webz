@@ -21,9 +21,11 @@
   "author": "Claudio Traspadini Oliveira",
   "license": "ISC",
   "dependencies": {
+    "@types/client-sessions": "^0.8.0",
     "async": "^2.6.0",
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.1",
+    "client-sessions": "^0.8.0",
     "debug": "^3.1.0",
     "errorhandler": "^1.5.0",
     "formidable": "^1.1.1",

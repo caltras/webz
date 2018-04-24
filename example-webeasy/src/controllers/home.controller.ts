@@ -2,18 +2,44 @@ import { BaseController, BodyParameter, FormParameter } from "webeasy/controller
 import { ContentType } from "webeasy/helpers/controller.helper";
 import { Controller, Get, Post, Put, Delete, Options, Inject } from 'webeasy/decorators';
 import { IncomingMessage, ServerResponse, ServerRequest } from 'http';
-import { Service } from '../service';
+import { Service, NoSingletonService } from '../service';
 import * as fs from 'fs';
 import * as Path from 'path';
+import {SessionHelper} from 'webeasy/helpers/session.helper';
+import { User } from 'webeasy/security/user';
+import { Security, SecurityAttribute } from 'webeasy/decorators/security.decorator';
 
 @Controller("/")
 class HomeController extends BaseController{
 
     @Inject() public service:Service;
+    @Inject() public noSingleton:NoSingletonService;
+    @Inject() public session:SessionHelper;
 
+    @Security(SecurityAttribute.permitAll)
+    @Get({ url: "/hello"})
+    public hello2(request:IncomingMessage,response:ServerResponse){
+        return 'hello';
+    }
+    @Security(SecurityAttribute.role,['ADMIN'])
+    @Get({ url: "/admin"})
+    public admin(request:IncomingMessage,response:ServerResponse){
+        return 'Admin';
+    }
+    @Security(SecurityAttribute.role,['MANAGER'])
+    @Get({ url: "/manager"})
+    public manager(request:IncomingMessage,response:ServerResponse){
+        return 'manager';
+    }
+    @Security(SecurityAttribute.role,['ABC'])
+    @Get({ url: "/manager2"})
+    public manager2(request:IncomingMessage,response:ServerResponse){   
+        return 'manager [ABC]';
+    }
     @Get({ url: "/"})
     public hello(request:IncomingMessage,response:ServerResponse){
-        return "Hello World";
+        let user:User = this.session.getAuthenticateUser(request);
+        return "Hello "+user.user;
     }
     @Get({ url: "/html"})
     public html(request:IncomingMessage,response:ServerResponse){
