@@ -2,7 +2,7 @@ import { BaseController, BodyParameter, FormParameter } from "webeasy/controller
 import { ContentType } from "webeasy/helpers/controller.helper";
 import { Controller, Get, Post, Put, Delete, Options, Inject } from 'webeasy/decorators';
 import { IncomingMessage, ServerResponse, ServerRequest } from 'http';
-import { Service } from '../service';
+import { Service, NoSingletonService } from '../service';
 import * as fs from 'fs';
 import * as Path from 'path';
 import {SessionHelper} from 'webeasy/helpers/session.helper';
@@ -13,6 +13,7 @@ import { Security, SecurityAttribute } from 'webeasy/decorators/security.decorat
 class HomeController extends BaseController{
 
     @Inject() public service:Service;
+    @Inject() public noSingleton:NoSingletonService;
     @Inject() public session:SessionHelper;
 
     @Security(SecurityAttribute.permitAll)
