@@ -136,3 +136,15 @@ export class WebeasyBootStrap{
     }
 
 }
+
+process
+    .on('unhandledRejection',(reason,p)=>{
+        console.warn("Finishing the program");
+        console.error(reason.message);
+        process.exit();
+    })
+    .on('uncaughtException',(err)=>{
+        console.error((new Date).toUTCString() + ' uncaughtException:', err.message)
+        console.error(err.stack)
+        process.exit();
+    });
