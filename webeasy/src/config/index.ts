@@ -46,7 +46,7 @@ var config = {
         "500": 'view/error/500.page.html'
     },
     websocket: {
-        enabled:false
+        enabled:true
     },
     redirect: {
         welcome:"/",

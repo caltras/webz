@@ -71,8 +71,8 @@ export class HelperUtils{
             .map(file => {
                 return fs.statSync(path.join(dir, file)).isDirectory()
                         ? HelperUtils.walkSync(path.join(dir, file), filelist)
-                        : filelist.concat(path.join(dir, file))[0]
-                });
+                        : (file.indexOf(".controller.") > -1 ? filelist.concat(path.join(dir, file))[0] : "")
+                }).filter( p => p !== "");
     }
     public static getListFileController(cfg:any):string[]{
         return _.flatMapDeep(HelperUtils.walkSync(cfg.base_url+"/"+cfg.controllers, []));
