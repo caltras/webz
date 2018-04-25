@@ -39,8 +39,8 @@ export class WebSocketHelper{
         let endPoints:string[] = WebSocketHelper.getListEndpoint(this.config);
         endPoints.forEach(e=>{
             let Clazz = require(e);
-            Clazz.prototype.server = serverName;
-            let instance = new Clazz();
+            let instance = new Clazz(this.websockets.get(serverName));
+            console.log(instance);
         })
     }
     private static walkSync(dir:any, filelist:any = []):any{
