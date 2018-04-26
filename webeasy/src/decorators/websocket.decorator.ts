@@ -6,18 +6,29 @@ export function WebSocket(value:any){
     return function<T extends { new(...args:any[]):{}}>(constructor:T) {
         console.log("@WebSocket - inside");
         return class extends constructor {
-            namespace=value;
+            namespace:string;
             io:any;
             nsp:any;
+            group:any;
+            numberUser:number=0;
             constructor(...args:any[]){
                 super();
                 this.io = args[0];
-                this.nsp = this.io.of(this.namespace);
-                this.nsp.on('connection',()=>{
-                    console.log('Connected to '+this.namespace);
-                    //let fn:Function = <Function>this['onMessage'];
-                    //this.nsp.on('message',fn);
-                })
+                this.namespace = value;
+                this.nsp = this.io.of(value);
+                this.nsp.on('connection',(socket:any)=>{
+                    socket.emit('welcome',`Welcome ${socket.id}`);
+                    socket.on('message chat',(data:any)=>{
+                        constructor.prototype["onMessage"].call(this,data,socket);
+                    });
+                    socket.on('disconnect',()=>{
+                        this.numberUser--;
+                    });
+                    this.numberUser++;
+                    Object.keys(this.nsp.sockets).map(s=>{
+                        this.nsp.sockets[s].emit("stats",this.numberUser);
+                    });
+                });
             }
         }
     }

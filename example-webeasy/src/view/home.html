@@ -6,8 +6,26 @@
         Home: {{text}}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.slim.js"></script>
         <script>
-            var socket = io();
-            socket.send("Hi, I'm a client");
+            //var socket = io();
+            var nsp = io('/chat');
+            var nsp2 = io('/chat');
+            nsp.on('welcome',(data)=>{
+                console.log(data)
+            });
+            nsp2.on("welcome",(data)=>{
+                console.log(data);
+            });
+            nsp2.on("message chat",(data)=>{
+                console.log(data);
+            })
+            nsp.on("stats",(stats)=>{
+                console.log(stats);
+            });
+            nsp2.on("stats",(stats)=>{
+                console.log(stats);
+            });
+            nsp.emit("message chat","Hi, I'm a client from namespace");
+            nsp2.emit("message chat","Hi, I'm another client from namespace");
         </script>
     </body>
 </html>
