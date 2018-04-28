@@ -38,8 +38,12 @@ export abstract class AbstractTokenAuthentication{
         let session:SessionHelper = SessionHelper.getInstance();
         let user:User = this.getUser(this.defineAuthentication(token));
         if(user){
-            session.setUser(request,user);
-            this.tokenSessions[user.token] = session.getSession(request);
+            if(request){
+                session.setUser(request,user);
+                this.tokenSessions[user.token] = session.getSession(request);
+            }else{
+                console.warn("Request is null. User won't be put in session");
+            }
             return user;
         }else{
             throw new NotAuthenticateException();

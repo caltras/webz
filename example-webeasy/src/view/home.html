@@ -4,28 +4,45 @@
     </head>
     <body>
         Home: {{text}}
+
+        <button onclick="onClick()">
+            Send Message
+        </button>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.slim.js"></script>
         <script>
             //var socket = io();
-            var nsp = io('/chat');
-            var nsp2 = io('/chat');
+            var nsp = io('/chat',{
+                query: {
+                    token: 'token abc123'
+                }
+            });
+            nsp.on('error',(error)=>{
+                console.log(error);
+            })
             nsp.on('welcome',(data)=>{
                 console.log(data)
             });
-            nsp2.on("welcome",(data)=>{
-                console.log(data);
-            });
-            nsp2.on("message chat",(data)=>{
-                console.log(data);
-            })
             nsp.on("stats",(stats)=>{
                 console.log(stats);
             });
-            nsp2.on("stats",(stats)=>{
-                console.log(stats);
+            nsp.on('joined',(data)=>{
+                console.log(data);
             });
-            nsp.emit("message chat","Hi, I'm a client from namespace");
-            nsp2.emit("message chat","Hi, I'm another client from namespace");
+            nsp.on('leaved',(data)=>{
+                console.log(data);
+            });
+            nsp.emit("message","Hi, I'm a client from namespace");
+
+            nsp.emit('join',"I'm in");
+            var cont=1;
+            function onClick(){
+                nsp.emit("message",'Message #'+(cont++));
+            }
+
+            setTimeout(function(){
+                nsp.disconnect();
+            },10000);
+            
         </script>
     </body>
 </html>

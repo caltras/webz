@@ -10,6 +10,7 @@ import * as Path from 'path';
 import * as debug from 'debug';
 import { FilterHelper } from "../helpers/filter.helper";
 import { I18nHelper } from "../i18n/i18n.helper";
+import { SecurityHelper } from "../helpers/security.helper";
 
 export class SecurityException extends Error{
     constructor(msg:string){
@@ -32,6 +33,9 @@ export class Security extends SecurityInterface{
     
     @Inject()
     private configurationHelper:ConfigurationHelper;
+    @Inject() 
+    private securityHelper:SecurityHelper;
+
     private logger = debug('security');
     
     constructor(){
@@ -78,7 +82,8 @@ export class Security extends SecurityInterface{
         }
     }
     isAuthenticate(request:ServerRequest, response:ServerResponse):boolean{
-        let token:any = request.headers["authorization"];
+        return this.securityHelper.isAuthenticate(request,response);
+        /*let token:any = request.headers["authorization"];
         let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
         let tokenHandler = ConfigurationHelper.getInstance().getProperty('authentication').tokenHandler;
         if(!user && token && tokenHandler){
@@ -95,9 +100,9 @@ export class Security extends SecurityInterface{
         if(!user){
             throw new NotAuthenticateException();
         }
-        return !!user;
+        return !!user;*/
     }
-    checkNegativeRoles(url:string, userRoles:string[]):boolean{
+    /*checkNegativeRoles(url:string, userRoles:string[]):boolean{
         let allowed =true;
         //[!MANAGER]
         let negativeRolesInUrl = FilterHelper.getInstance().urlRoles[url].filter((r:string)=>{
@@ -129,9 +134,10 @@ export class Security extends SecurityInterface{
             }
         });
         return allowed;
-    }
+    }*/
     isAllowed(request:ServerRequest, response:ServerResponse):boolean{
-        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
+        return this.securityHelper.isAllowed(request,response);
+        /*let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
         let allowed=true;
         if(FilterHelper.getInstance().urlRoles[request.url]){
             allowed = this.checkPositive(request.url,user.roles) && this.checkNegativeRoles(request.url,user.roles);
@@ -139,6 +145,6 @@ export class Security extends SecurityInterface{
                 throw new NotAllowedException();
             }
         }
-        return allowed;
+        return allowed;*/
     }
 }
