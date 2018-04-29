@@ -4,9 +4,7 @@ var securityHelper = require('../helpers/security.helper').SecurityHelper.getIns
 var _ = require('lodash');
 
 export function WebSocket(value:any,security:boolean=false){
-    console.log("@WebSocket");
     return function<T extends { new(...args:any[]):{}}>(constructor:T) {
-        console.log("@WebSocket - inside");
         return class extends constructor {
             namespace:string;
             io:any;
@@ -25,16 +23,16 @@ export function WebSocket(value:any,security:boolean=false){
                     try{
                         let user:any;
                         if(security){
-                            let user:any = securityHelper.authenticate(socket.handshake.query.token);
-                            webSocketHelper.instance.users[user.token] = webSocketHelper.instance.users[user.token] || []; 
-                            webSocketHelper.instance.users[user.token].push(socket);
+                            let user:any = securityHelper.authenticate(socket.handshake.query.authorization);
+                            webSocketHelper.instance.users[user.authorization] = webSocketHelper.instance.users[user.authorization] || []; 
+                            webSocketHelper.instance.users[user.authorization].push(socket);
                         }
                         socket.on('disconnect',()=>{
                             this.numberUser--;
                             if(this.listeners.disconnect){
                                 this.listeners.disconnect.call(this,socket,this.nsp);
-                                if(socket.handshake.query.token){
-                                    _.remove(webSocketHelper.instance.users[socket.handshake.query.token.split(" ")[1]],(s:any)=>{
+                                if(socket.handshake.query.authorization){
+                                    _.remove(webSocketHelper.instance.users[socket.handshake.query.authorization.split(" ")[1]],(s:any)=>{
                                         return s.id === socket.id;
                                     });
                                 }
