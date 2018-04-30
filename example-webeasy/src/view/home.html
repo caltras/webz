@@ -31,12 +31,19 @@
             nsp.on('leaved',(data)=>{
                 console.log(data);
             });
+            nsp.on('disconnect',function(){
+                console.warn("disconnect: Client is disconnected");
+            });
             nsp.emit("message","Hi, I'm a client from namespace");
 
             nsp.emit('join',"I'm in");
             var cont=1;
             function onClick(){
-                nsp.emit("message",'Message #'+(cont++));
+                if(nsp.connected){
+                    nsp.emit("message",'Message #'+(cont++));
+                }else{
+                    console.warn("Client is disconnected");
+                }
             }
 
             setTimeout(function(){

@@ -19,32 +19,27 @@ export function WebSocket(value:any,security:boolean=false){
                 this.namespace = value;
                 this.nsp = this.io.of(value);
                 this.nsp.on('connection',(socket:any)=>{
-                    //CHECK SECURITY
                     try{
                         let user:any;
                         if(security){
                             let user:any = securityHelper.authenticate(socket.handshake.query.authorization);
-                            webSocketHelper.instance.users[user.authorization] = webSocketHelper.instance.users[user.authorization] || []; 
-                            webSocketHelper.instance.users[user.authorization].push(socket);
+                            webSocketHelper.instance.users[socket.handshake.query.authorization] = webSocketHelper.instance.users[socket.handshake.query.authorization] || []; 
+                            webSocketHelper.instance.users[socket.handshake.query.authorization].push(socket);
                         }
                         socket.on('disconnect',()=>{
                             this.numberUser--;
                             if(this.listeners.disconnect){
                                 this.listeners.disconnect.call(this,socket,this.nsp);
-                                if(socket.handshake.query.authorization){
-                                    _.remove(webSocketHelper.instance.users[socket.handshake.query.authorization.split(" ")[1]],(s:any)=>{
-                                        return s.id === socket.id;
-                                    });
-                                }
+                                setTimeout(()=>{
+                                    if(socket.handshake.query.authorization){
+                                        console.log(`Socket ${socket.id} is disconnected now.`)
+                                        _.remove(webSocketHelper.instance.users[socket.handshake.query.authorization],(s:any)=>{
+                                            return s.id === socket.id;
+                                        });
+                                    }
+                                },500);
                             }
                         });
-                        /*Object.keys(this.rooms).forEach(r=>{
-                            console.log(r);
-                            console.log(socket.join(r));
-                            Object.keys(this.rooms[r]).forEach(d=>{
-
-                            });
-                        })*/
                         Object.keys(this.listeners).forEach(l=>{
                             socket.on(l,(data:any)=>{
                                 this.listeners[l].call(this,data,socket,this.nsp)

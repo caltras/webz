@@ -25,7 +25,7 @@ export class WebSocketHelper{
             io.on('connect',(socket:any)=>{
                 debug(`${socket.id} Socket connect on server ${name} on port ${port}`);
                 socket.on('message',(m:any)=>{
-                    console.log(m);
+                    debug(m);
                 });
                 socket.on('disconnect',()=>{
                     debug(`Client ${socket.id} disconnected`); 
