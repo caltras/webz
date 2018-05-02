@@ -45,19 +45,33 @@ UrlToPattern.convert = (map)=>{
 class Parser{
     constructor(){
         this.url="";
-        this.params = {};
+        this.params = null;
         this.fields = null;
+        this.pattern=null;
     }
-    parse(url){
+    parse(url,pattern){
         this.url = url;
+        this.pattern = pattern;
         return this;
     }
     parameters(){
-        return {};
+        if(!this.params){
+            this.params = {};
+            var cont=1;
+            var matches = this.url.match(this.pattern.regexp);
+            if(matches){
+                for(var i=0;i<this.pattern.fields.length;i++){
+                    this.params[this.pattern.fields[0]] = matches[cont];
+                    cont++;
+                }
+            }
+            
+        }
+        return this.params;
     }
     queryString(){
-        this.fields ={};
-        if(this.fields){
+        if(!this.fields){
+            this.fields ={};
             var q=this.url.split("?");
             if(q.length>1){
                 var fieldsValues = q[1].split("=");
@@ -90,8 +104,9 @@ describe("Parse URL",()=>{
         expect(["id","number"]).to.have.members(pattern[1].fields);
     });
     it("simple url",()=>{
-        urls.forEach((u)=>{
-            console.log(new Parser().parse(u).queryString());
-        });
+        console.log(new Parser().parse(urls[0],pattern[0]).parameters());
+        console.log(new Parser().parse(urls[0],pattern[0]).queryString());
+        console.log(new Parser().parse(urls[1],pattern[0]).parameters());
+        console.log(new Parser().parse(urls[1],pattern[0]).queryString());
     });
 });
