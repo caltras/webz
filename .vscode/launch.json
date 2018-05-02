@@ -26,7 +26,11 @@
             "console": "internalConsole",
             "cwd": "${workspaceRoot}",
             "program": "${workspaceRoot}/example-webeasy/src/index.ts",
-            "outFiles": ["${workspaceRoot}/example-webeasy/dist/*.js"]
+            "outFiles": ["${workspaceRoot}/example-webeasy/dist/*.js"],
+            "env": {
+                "DEBUG":"*",
+                "DEBUG_COLORS":"true"
+            }
         },
         {
             "type": "node",

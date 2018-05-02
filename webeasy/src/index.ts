@@ -7,9 +7,22 @@ import { IncomingMessage } from "http";
 import * as Lodash from 'lodash';
 import { Configuration } from './config/index';
 import { HtmlEngineFactory } from "./helpers/html.engine.helper";
+import { FilterHelper } from './helpers/filter.helper';
+import { ResourceHelper } from './helpers/resource.helper';
+import * as Path from 'path';
+import { Cors } from "./filters/cors";
+import { AbstractFilter } from "./filters";
+import { ConfigurationHelper } from "./helpers/configuration.helper";
+import * as sessions from 'client-sessions';
+import {OptionsSession, SessionHelper} from './helpers/session.helper';
+import { LoginHandlerAbstract, LoginHelper } from "./security/login.handler";
+import { WebSocketHelper} from "./helpers/websocket.helper";
+import { Inject } from "./decorators";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
+var filterHelper = FilterHelper.getInstance();
+var resourceHelper = ResourceHelper.getInstance();
 
 const debug = debugModule('webeasy-bootstrap');
 export class WebeasyBootStrap{
@@ -18,14 +31,97 @@ export class WebeasyBootStrap{
     private servers:any;
     private config:any = {};
 
+    @Inject()
+    private websocketHelper:WebSocketHelper;
+    @Inject()
+    private sessionHelper:SessionHelper;
+
     constructor(cfg:any){
         this.urlParser = urlModule;
         this.servers = {};
         Configuration.getInstance().getConfig().base_url = cfg.base_url;
-        this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
-    }
+        cfg.filter = cfg.filter || {};
+        cfg.filter.filters = Lodash.map(cfg.filter.filters,(f:string)=>{
+            return Path.join(cfg.base_url,f);
+        });
+        cfg.filter.filters = Lodash.map(Configuration.getInstance().getConfig().filter.filters,(f:string)=>{
+            return Path.join(__dirname,f);
+        }).concat(cfg.filter.filters);
 
-    listen(name?:string,port?:any){
+        this.config = Lodash.defaultsDeep({},cfg,Configuration.getInstance().getConfig());
+        this.config.filter.exceptions = this.config.filter.exceptions.concat(this.config.filter.security.exceptions);
+        ConfigurationHelper.getInstance().setConfiguration(this.config);
+    }
+    addLoginHandler(handler:LoginHandlerAbstract){
+        LoginHelper.getInstance().setHandle(handler);
+    }
+    addFilters(filter:AbstractFilter|AbstractFilter[]){
+        filterHelper.addFilter(filter);
+        filterHelper.sortingFilters();
+    }
+    loadFilters(){     
+        filterHelper.load(this.config.filter.filters);
+    }
+    loadTemplates(){
+        let files:string[] = HelperUtils.walkSync(this.config.base_url+"/"+this.config.view.base,[]);
+        let engine = HtmlEngineFactory.create(this.config);
+        Lodash.each(Lodash.flatMapDeep(files),(file)=>{
+            engine.compile(file);
+        });
+    }
+    cors(){
+        if(this.config.cors.enabled){
+            this.addFilters(new Cors(this.config.cors));
+        }
+    }
+    async create(name:string="default"){
+        let exists = !!this.servers.hasOwnProperty(name);
+        if(name && exists){ 
+            debug("Server already exists");
+            throw "Server already exists";
+        }
+        name = name || "default";
+        await controllerHelper.load(this.config);
+        filterHelper.securityFilter = this.config.filter.security;
+
+        filterHelper.exceptions = filterHelper.exceptions.concat(this.config.filter.security.exceptions.map(filterHelper.processUrlAsRegExp));
+
+        this.cors();
+        this.loadFilters();
+        this.loadTemplates();
+        let stack:any[] = [];
+        if(filterHelper.hasFilters() && this.config.filter.enabled){
+            stack.push({class: filterHelper, method: filterHelper.doFilter});
+        }
+        resourceHelper.setResources(this.config.resources);
+        stack.push({ class: resourceHelper, method: resourceHelper.doFilter})
+        stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
+
+        this.sessionHelper.options = new OptionsSession();
+        this.sessionHelper.enabled = this.config.session.enabled;
+        this.sessionHelper.session = sessions(this.sessionHelper.options);
+
+        this.servers[name] = http.createServer((req,res)=>{
+            //URL-PARSER
+            let executeStack = ()=>{
+                stack.forEach(s=>{
+                    if(!res.finished){
+                        s.method.call(s.class,req,res,this.config);
+                    }
+                });
+            }
+            debug("HTTP/"+req.httpVersion+" - "+req.method+" : "+req.url);
+            if(this.config.session.enabled && (this.config.filter.enabled || this.config.authentication.enabled)){
+                this.sessionHelper.session(req,res,executeStack);
+            }else{
+                executeStack();
+            }
+            
+        });
+
+        return this;
+    }
+    listen(name:string="default",port?:any){
         if(!Object.keys(this.servers).length){
             debug("There is any server configured.");
             throw "There is any server configured.";
@@ -42,47 +138,20 @@ export class WebeasyBootStrap{
                 debug(`Listening server ${name} at ${port}`);
             });
         }
-        return this;
-        
-    }
-    addFilters(){
+        this.websocketHelper.configuration(this.config).create(this.servers[name],name,port);
 
-    }
-    loadTemplates(cfg:any){
-        let files:string[] = HelperUtils.walkSync(this.config.base_url+"/"+this.config.view.base,[]);
-        let engine = HtmlEngineFactory.create(cfg);
-        Lodash.each(Lodash.flatMapDeep(files),(file)=>{
-            engine.compile(file);
-        });
-    }
-    async create(name?:string){
-        let exists = !!this.servers.hasOwnProperty(name);
-        if(name && exists){ 
-            debug("Server already exists");
-            throw "Server already exists";
-        }
-        name = name || "default";
-        await controllerHelper.load(this.config);
-        this.loadTemplates(this.config);
-        //CORS
-        //FILTERS
-        //AUTHENTICATION
-        //URL-PARSER
-        //REQUEST-PARSER
-        //ACTIONS/CONTROLLERS
-        let stack:any[] = [];
-        if(controllerHelper.hasFilters()){
-            stack.push({class: controllerHelper, mehtod: controllerHelper.doFilter});
-        }
-        stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
-        this.servers[name] = http.createServer((req,res)=>{
-            stack.forEach(s=>{
-                s.method.call(s.class,req,res);
-            });
-        });
-
-        //socket.io
         return this;
     }
-
 }
+
+process
+    .on('unhandledRejection',(reason,p)=>{
+        console.warn("Finishing the program");
+        console.error(reason.message);
+        process.exit();
+    })
+    .on('uncaughtException',(err)=>{
+        console.error((new Date).toUTCString() + ' uncaughtException:', err.message)
+        console.error(err.stack)
+        process.exit();
+    });

@@ -18,3 +18,10 @@ export class Service{
     }
 }
 
+
+@Injectable({singleton:false})
+export class NoSingletonService{
+    public execute(){
+        return "no singleton";
+    }
+}

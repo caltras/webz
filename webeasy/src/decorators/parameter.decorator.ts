@@ -6,12 +6,14 @@ export const Inject =(params?:any)=>{
     return function(target:any, key:string){
         let val = target.constructor[key];
         let type = Reflect.getMetadata("design:type",target,key);
+        let instance = new type();
+        instance.id = Math.random();
         if(type.__injectable){
             function get() { 
                 if(type.getInstance){
                     return type.getInstance();
                 }else{
-                    return new type(); 
+                    return instance; 
                 }
             }
             function set(value:any) { 

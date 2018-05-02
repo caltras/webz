@@ -1,6 +1,65 @@
 <html>
-    <head></head>
+    <head>
+        <link href="public/css/style.css" rel="stylesheet">
+    </head>
     <body>
         Home: {{text}}
+
+        <button onclick="onClick()">
+            Send Message
+        </button>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.slim.js"></script>
+        <script>
+            //var socket = io();
+            var nsp = io('/chat',{
+                query: {
+                    authorization: 'basic '+window.btoa('abc:123')
+                }
+            });
+            var pageNamespace = io('/page',{
+                query: {
+                    authorization: 'basic '+window.btoa('abc:123')
+                }
+            });
+            nsp.on('error',(error)=>{
+                console.log(error);
+            })
+            nsp.on('welcome',(data)=>{
+                console.log(data)
+            });
+            nsp.on("stats",(stats)=>{
+                console.log(stats);
+            });
+            nsp.on('joined',(data)=>{
+                console.log(data);
+            });
+            nsp.on('leaved',(data)=>{
+                console.log(data);
+            });
+            nsp.on('disconnect',function(){
+                console.warn("disconnect: Client is disconnected");
+            });
+            nsp.emit("message","Hi, I'm a client from namespace");
+
+            nsp.emit('join',"I'm in");
+
+            pageNamespace.emit('message','Hello!! I`m a page socket');
+            pageNamespace.on('update',(message)=>{
+                console.log(message);
+            });
+            var cont=1;
+            function onClick(){
+                if(nsp.connected){
+                    nsp.emit("message",'Message #'+(cont++));
+                }else{
+                    console.warn("Client is disconnected");
+                }
+            }
+
+            setTimeout(function(){
+                nsp.disconnect();
+            },10000);
+            
+        </script>
     </body>
 </html>

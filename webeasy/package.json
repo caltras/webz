@@ -21,15 +21,20 @@
   "author": "Claudio Traspadini Oliveira",
   "license": "ISC",
   "dependencies": {
+    "@types/client-sessions": "^0.8.0",
+    "@types/socket.io": "^1.4.33",
     "async": "^2.6.0",
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.1",
+    "client-sessions": "^0.8.0",
     "debug": "^3.1.0",
     "errorhandler": "^1.5.0",
     "formidable": "^1.1.1",
     "handlebars": "^4.0.11",
     "lodash": "^4.17.4",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "socket.io": "^2.1.0",
+    "supports-color": "^5.3.0"
   },
   "devDependencies": {
     "@types/handlebars": "^4.0.36",
@@ -61,7 +66,7 @@
     "typescript": "^2.7.1"
   },
   "engines": {
-    "node":"9.2.x",
-    "npm":"5.5.x"
+    "node": "9.2.x",
+    "npm": "5.5.x"
   }
 }

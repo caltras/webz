@@ -35,45 +35,38 @@ var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
+
         descriptor.value = function(args:any){
-            
-            let reflectionClass = Reflect.getMetadata(SINGLETON_CLASS,target.constructor);
-            let methodParams:any = Reflect.getMetadata(type,target.constructor,propertyKey);
-            
-            let path = reflectionClass.getPath();
-            
-            let request_url = ""; 
-            let contentType = Helper.ContentType.HTML;
-            let async:boolean = false;
-            if(methodParams instanceof String){
-                request_url = path+methodParams;
-            }else{
-                request_url = path+ (methodParams.url || "");
-                contentType = methodParams.responseContentType || Helper.ContentType.HTML;
-                if(methodParams.hasOwnProperty("async")){
-                    async = methodParams.async;
+            try{
+                let reflectionClass = Reflect.getMetadata(SINGLETON_CLASS,target.constructor);
+                let methodParams:any = Reflect.getMetadata(type,target.constructor,propertyKey);
+                
+                let path = reflectionClass.getPath();
+                
+                let request_url = ""; 
+                let contentType = Helper.ContentType.HTML;
+                let async:boolean = false;
+                if(methodParams instanceof String){
+                    request_url = path+methodParams;
+                }else{
+                    request_url = path+ (methodParams.url || "");
+                    contentType = methodParams.responseContentType || Helper.ContentType.HTML;
+                    if(methodParams.hasOwnProperty("async")){
+                        async = methodParams.async;
+                    }
                 }
-            }
-            let request = args.request;
-            let response = args.response;
-            let body:any;
-            /**
-             * ---------------------------------------------
-             * BodyParser | Original method | result (Avg)  |
-             * ----------------------------------------------
-             *      0     |     0           | (GET) 33k RPS |
-             * ----------------------------------------------
-             *      1     |     0           | (GET) 31k RPS |
-             * ----------------------------------------------
-             *      0     |     1           | (GET) 24k RPS|
-             * ----------------------------------------------
-             *      1     |     1           | (GET) 20k RPS  |
-             * ----------------------------------------------
-             */
-            if(type === GET_KEY){
-                return processGet(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
-            }else{
-                return process(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
+                let request = args.request;
+                let response = args.response;
+                let body:any;
+
+                if(type === GET_KEY){
+                    return processGet(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
+                }else{
+                    return process(request,response,args,type,contentType,body,originalMethod,reflectionClass,async);
+                }
+            }catch(e){
+                args.response.statusCode = 505;
+                args.response.end();
             }
         }
         Reflect.defineMetadata(type,params,classConstructor,propertyKey);
@@ -92,6 +85,7 @@ function processGet(request:any,response:any,args:any,type:string, contentType:a
             if(request.headers["content-length"]){
                 //the difference
                 body = BodyParser.parse(request);
+                Object.defineProperty(request,"body",{ value : body.getData(), writable:true });
                 newArguments.push(body);
             }
             if(async){
@@ -113,7 +107,10 @@ function processGet(request:any,response:any,args:any,type:string, contentType:a
                 resolve();
             }
         }catch(e){
+            response.statusCode = 505;
+            response.end();
             reject(e);
+            
         }
     });
 }
@@ -126,6 +123,7 @@ function process(request:any,response:any,args:any,type:string, contentType:any,
             if(request.headers["content-length"]){
                 //the difference
                 body = await BodyParser.parse(request);
+                Object.defineProperty(request,"body",{ value : body.getData(), writable:true });
                 newArguments.push(body);
             }
             if(async){
@@ -147,17 +145,26 @@ function process(request:any,response:any,args:any,type:string, contentType:any,
                 resolve();
             }
         }catch(e){
+            response.statusCode = 505;
+            response.end();
             reject(e);
+            
         }
     });
 };
 function processResponse(result:any,response:any,type:string,contentType:any){
-    if([CONNECT_KEY,HEAD_KEY,PATCH_KEY].indexOf(type)===-1){
-        response.writeHead(200,{'Content-type': contentType});
-        response.end(Helper.parse(result,contentType));
-    }else{
-        response.writeHead(200);
-        response.end();
+    if(!response.finished){
+        response.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        response.setHeader('Expires', '-1');
+        response.setHeader('Pragma', 'no-cache');
+        
+        if([CONNECT_KEY,HEAD_KEY,PATCH_KEY].indexOf(type)===-1){
+            response.writeHead(200,{'Content-type': contentType});
+            response.end(Helper.parse(result,contentType));
+        }else{
+            response.writeHead(200);
+            response.end();
+        }
     }
 };
 
