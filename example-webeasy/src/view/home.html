@@ -16,6 +16,11 @@
                     authorization: 'basic '+window.btoa('abc:123')
                 }
             });
+            var pageNamespace = io('/page',{
+                query: {
+                    authorization: 'basic '+window.btoa('abc:123')
+                }
+            });
             nsp.on('error',(error)=>{
                 console.log(error);
             })
@@ -37,6 +42,11 @@
             nsp.emit("message","Hi, I'm a client from namespace");
 
             nsp.emit('join',"I'm in");
+
+            pageNamespace.emit('message','Hello!! I`m a page socket');
+            pageNamespace.on('update',(message)=>{
+                console.log(message);
+            });
             var cont=1;
             function onClick(){
                 if(nsp.connected){

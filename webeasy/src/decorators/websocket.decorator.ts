@@ -2,6 +2,7 @@ import "reflect-metadata";
 var webSocketHelper = require('../helpers/websocket.helper').WebSocketHelper;
 var securityHelper = require('../helpers/security.helper').SecurityHelper.getInstance();
 var _ = require('lodash');
+var debug = require('debug')('websocket.decorator');
 
 export function WebSocket(value:any,security:boolean=false){
     return function<T extends { new(...args:any[]):{}}>(constructor:T) {
@@ -19,6 +20,7 @@ export function WebSocket(value:any,security:boolean=false){
                 this.namespace = value;
                 this.nsp = this.io.of(value);
                 this.nsp.on('connection',(socket:any)=>{
+                    debug(`Connecting client Socket ${socket.id}.`);
                     try{
                         let user:any;
                         if(security){
@@ -32,7 +34,7 @@ export function WebSocket(value:any,security:boolean=false){
                                 this.listeners.disconnect.call(this,socket,this.nsp);
                                 setTimeout(()=>{
                                     if(socket.handshake.query.authorization){
-                                        console.log(`Socket ${socket.id} is disconnected now.`)
+                                        debug(`Socket ${socket.id} is disconnected now.`);
                                         _.remove(webSocketHelper.instance.users[socket.handshake.query.authorization],(s:any)=>{
                                             return s.id === socket.id;
                                         });

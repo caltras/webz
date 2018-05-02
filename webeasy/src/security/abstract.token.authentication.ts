@@ -5,10 +5,12 @@ import { TokenAuthentication } from './token.authentication';
 import { BasicAuthentication } from './basic.authentication';
 import { SessionHelper } from '../helpers/session.helper';
 import { AuthenticationFactory } from './authentication.factory';
+import * as debug from 'debug';
 
 export abstract class AbstractTokenAuthentication{
     
     protected tokenSessions:any={};
+    private logger = debug("abstract-token");
     abstract getUserByUserAndPassword(authInterface:BasicAuthentication):User;
     abstract authenticateByToken(token:string):User;
     
@@ -42,7 +44,7 @@ export abstract class AbstractTokenAuthentication{
                 session.setUser(request,user);
                 this.tokenSessions[user.token] = session.getSession(request);
             }else{
-                console.warn("Request is null. User won't be put in session");
+                this.logger("Request is null. User won't be put in session");
             }
             return user;
         }else{
