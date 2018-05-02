@@ -16,7 +16,8 @@ import { ConfigurationHelper } from "./helpers/configuration.helper";
 import * as sessions from 'client-sessions';
 import {OptionsSession, SessionHelper} from './helpers/session.helper';
 import { LoginHandlerAbstract, LoginHelper } from "./security/login.handler";
-
+import { WebSocketHelper} from "./helpers/websocket.helper";
+import { Inject } from "./decorators";
 
 var controllerHelper = ControllerHelper.ControllerHelper.getInstance();
 var HelperUtils = ControllerHelper.HelperUtils;
@@ -29,6 +30,11 @@ export class WebeasyBootStrap{
     private urlParser:any;
     private servers:any;
     private config:any = {};
+
+    @Inject()
+    private websocketHelper:WebSocketHelper;
+    @Inject()
+    private sessionHelper:SessionHelper;
 
     constructor(cfg:any){
         this.urlParser = urlModule;
@@ -68,7 +74,7 @@ export class WebeasyBootStrap{
             this.addFilters(new Cors(this.config.cors));
         }
     }
-    async create(name?:string){
+    async create(name:string="default"){
         let exists = !!this.servers.hasOwnProperty(name);
         if(name && exists){ 
             debug("Server already exists");
@@ -91,8 +97,9 @@ export class WebeasyBootStrap{
         stack.push({ class: resourceHelper, method: resourceHelper.doFilter})
         stack.push({ class: controllerHelper,method: controllerHelper.callRoute });
 
-        SessionHelper.getInstance().options = new OptionsSession();
-        SessionHelper.getInstance().session = sessions(SessionHelper.getInstance().options);
+        this.sessionHelper.options = new OptionsSession();
+        this.sessionHelper.enabled = this.config.session.enabled;
+        this.sessionHelper.session = sessions(this.sessionHelper.options);
 
         this.servers[name] = http.createServer((req,res)=>{
             //URL-PARSER
@@ -105,17 +112,16 @@ export class WebeasyBootStrap{
             }
             debug("HTTP/"+req.httpVersion+" - "+req.method+" : "+req.url);
             if(this.config.session.enabled && (this.config.filter.enabled || this.config.authentication.enabled)){
-                SessionHelper.getInstance().session(req,res,executeStack);
+                this.sessionHelper.session(req,res,executeStack);
             }else{
                 executeStack();
             }
             
         });
 
-        //socket.io
         return this;
     }
-    listen(name?:string,port?:any){
+    listen(name:string="default",port?:any){
         if(!Object.keys(this.servers).length){
             debug("There is any server configured.");
             throw "There is any server configured.";
@@ -132,9 +138,10 @@ export class WebeasyBootStrap{
                 debug(`Listening server ${name} at ${port}`);
             });
         }
+        this.websocketHelper.configuration(this.config).create(this.servers[name],name,port);
+
         return this;
     }
-
 }
 
 process

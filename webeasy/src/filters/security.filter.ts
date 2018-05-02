@@ -10,6 +10,7 @@ import * as Path from 'path';
 import * as debug from 'debug';
 import { FilterHelper } from "../helpers/filter.helper";
 import { I18nHelper } from "../i18n/i18n.helper";
+import { SecurityHelper } from "../helpers/security.helper";
 
 export class SecurityException extends Error{
     constructor(msg:string){
@@ -32,6 +33,9 @@ export class Security extends SecurityInterface{
     
     @Inject()
     private configurationHelper:ConfigurationHelper;
+    @Inject() 
+    private securityHelper:SecurityHelper;
+
     private logger = debug('security');
     
     constructor(){
@@ -78,67 +82,9 @@ export class Security extends SecurityInterface{
         }
     }
     isAuthenticate(request:ServerRequest, response:ServerResponse):boolean{
-        let token:any = request.headers["authorization"];
-        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
-        let tokenHandler = ConfigurationHelper.getInstance().getProperty('authentication').tokenHandler;
-        if(!user && token && tokenHandler){
-            this.logger('Searching user '+token);
-            try{
-                let base:string = ConfigurationHelper.getInstance().getProperty('base_url');
-                let Handler:any = require(Path.join(base,tokenHandler));
-                let handle:AbstractTokenAuthentication = new Handler();
-                user = handle.authenticate(token,request);
-            }catch(e){
-                throw new NotAuthenticateException();
-            }
-        }
-        if(!user){
-            throw new NotAuthenticateException();
-        }
-        return !!user;
-    }
-    checkNegativeRoles(url:string, userRoles:string[]):boolean{
-        let allowed =true;
-        //[!MANAGER]
-        let negativeRolesInUrl = FilterHelper.getInstance().urlRoles[url].filter((r:string)=>{
-            return r.indexOf("!") > -1;
-        }).map((r:string)=>{
-            return r.replace("!","");
-        });
-        if(negativeRolesInUrl.length>0){
-            //[MANAGER]
-            userRoles.forEach((r:string,index:number)=>{
-                if(allowed && negativeRolesInUrl.indexOf(r) > -1){
-                    allowed=false;
-                    return true;
-                }else{
-                    return false;
-                }
-            });    
-        }
-        return allowed;
-    }
-    checkPositive(url:string,userRoles:string[]):boolean{
-        let allowed:boolean = false;
-        userRoles.forEach((r:string,index:number)=>{
-            if(!allowed){
-                allowed = FilterHelper.getInstance().urlRoles[url].indexOf(r) > -1;
-                return true;
-            }else{
-                return false;
-            }
-        });
-        return allowed;
+        return this.securityHelper.isAuthenticate(request,response);
     }
     isAllowed(request:ServerRequest, response:ServerResponse):boolean{
-        let user:User = SessionHelper.getInstance().getAuthenticateUser(request);
-        let allowed=true;
-        if(FilterHelper.getInstance().urlRoles[request.url]){
-            allowed = this.checkPositive(request.url,user.roles) && this.checkNegativeRoles(request.url,user.roles);
-            if(!allowed){
-                throw new NotAllowedException();
-            }
-        }
-        return allowed;
+        return this.securityHelper.isAllowed(request,response);
     }
 }

@@ -11,7 +11,7 @@ export class SessionHelper{
     public session:RequestHandler;
     public options:SessionOptions;
     public properties:string[] = [];
-    public enabled:boolean = ConfigurationHelper.getInstance().getConfiguration().session.enabled;
+    public enabled:boolean=false;
 
     static getInstance():SessionHelper{
         if(!SessionHelper.instance){

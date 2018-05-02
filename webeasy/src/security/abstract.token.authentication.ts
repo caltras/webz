@@ -5,10 +5,12 @@ import { TokenAuthentication } from './token.authentication';
 import { BasicAuthentication } from './basic.authentication';
 import { SessionHelper } from '../helpers/session.helper';
 import { AuthenticationFactory } from './authentication.factory';
+import * as debug from 'debug';
 
 export abstract class AbstractTokenAuthentication{
     
     protected tokenSessions:any={};
+    private logger = debug("abstract-token");
     abstract getUserByUserAndPassword(authInterface:BasicAuthentication):User;
     abstract authenticateByToken(token:string):User;
     
@@ -38,8 +40,12 @@ export abstract class AbstractTokenAuthentication{
         let session:SessionHelper = SessionHelper.getInstance();
         let user:User = this.getUser(this.defineAuthentication(token));
         if(user){
-            session.setUser(request,user);
-            this.tokenSessions[user.token] = session.getSession(request);
+            if(request){
+                session.setUser(request,user);
+                this.tokenSessions[user.token] = session.getSession(request);
+            }else{
+                this.logger("Request is null. User won't be put in session");
+            }
             return user;
         }else{
             throw new NotAuthenticateException();
