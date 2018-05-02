@@ -6,6 +6,7 @@ var should = chai.should();
 var mapping = [
     "/users/${id}",
     "/users/${id}/phone/${number}",
+    "/users",
 ];
 var validations = [
     "/users/1",
@@ -13,14 +14,16 @@ var validations = [
     "/users/1?q=test",
     "/users/1/phone/123456789",
     "/users/1/phone/123456789/",
-    "/users/1/phone/987654321?q=test"
+    "/users/1/phone/987654321?filter=name",
+    "/users?filter=name&sort=-name"
 ]
 var urls = [
     "/users",
     "/users/1",
     "/users?q=test1",
     "/users/1?q=test1",
-    "/users/1?q=test1"
+    "/users/1?q=test1",
+    "/users?filter=name&sort=-name"
 ];
 class UrlToPattern{
 }
@@ -74,12 +77,16 @@ class Parser{
             this.fields ={};
             var q=this.url.split("?");
             if(q.length>1){
-                var fieldsValues = q[1].split("=");
-                if(fieldsValues.length>0){
-                    for(var i=0;i<fieldsValues.length;i=i+2){
-                        this.fields[fieldsValues[i]] = fieldsValues[i+1];
+                var keyValue = q[1].split("&");
+                keyValue.forEach((k)=>{
+                    var fieldsValues = k.split("=");
+                    if(fieldsValues.length>0){
+                        for(var i=0;i<fieldsValues.length;i=i+2){
+                            this.fields[fieldsValues[i]] = fieldsValues[i+1];
+                        }
                     }
-                }
+                })
+                
             }
         }
         return this.fields;
@@ -103,10 +110,15 @@ describe("Parse URL",()=>{
         assert.ok(pattern[1].regexp.test(validations[5]));
         expect(["id","number"]).to.have.members(pattern[1].fields);
     });
-    it("simple url",()=>{
-        console.log(new Parser().parse(urls[0],pattern[0]).parameters());
-        console.log(new Parser().parse(urls[0],pattern[0]).queryString());
-        console.log(new Parser().parse(urls[1],pattern[0]).parameters());
-        console.log(new Parser().parse(urls[1],pattern[0]).queryString());
+    it("Parser url into parameter",()=>{
+        expect({}).to.deep.equal(new Parser().parse(urls[0],pattern[0]).parameters());
+        expect({}).to.deep.equal(new Parser().parse(urls[0],pattern[0]).queryString());
+        expect({id:'1'}).to.deep.equal(new Parser().parse(urls[1],pattern[0]).parameters());
+        expect({}).to.deep.equal(new Parser().parse(urls[1],pattern[0]).queryString());
+        expect({}).to.deep.equal(new Parser().parse(urls[5],pattern[2]).parameters());
+        expect({filter:'name',sort:'-name'}).to.deep.equal(new Parser().parse(urls[5],pattern[2]).queryString());
+        expect({id:'1'}).to.deep.equal(new Parser().parse(urls[3],pattern[0]).parameters());
+        expect({q:'test1'}).to.deep.equal(new Parser().parse(urls[3],pattern[0]).queryString());
+
     });
 });
