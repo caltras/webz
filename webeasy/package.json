@@ -37,13 +37,13 @@
     "supports-color": "^5.3.0"
   },
   "devDependencies": {
-    "@types/handlebars": "^4.0.36",
     "@types/async": "^2.0.45",
     "@types/bcrypt-nodejs": "0.0.30",
     "@types/bluebird": "^3.5.18",
     "@types/debug": "0.0.30",
     "@types/errorhandler": "0.0.32",
     "@types/formidable": "^1.0.30",
+    "@types/handlebars": "^4.0.36",
     "@types/jest": "^21.1.8",
     "@types/lodash": "^4.14.91",
     "@types/node": "^9.4.1",
@@ -55,6 +55,7 @@
     "gulp": "^3.9.1",
     "gulp-copy": "^1.1.0",
     "jest": "^21.2.1",
+    "mocha": "^5.1.1",
     "node-sass": "^4.7.2",
     "nodemon": "^1.13.0",
     "reflect-metadata": "^0.1.12",
