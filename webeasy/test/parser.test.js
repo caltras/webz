@@ -4,8 +4,8 @@ var expect = chai.expect;    // Using Expect style
 var should = chai.should();
 
 var mapping = [
-    "/users/${id}",
-    "/users/${id}/phone/${number}",
+    "/users/:id",
+    "/users/:id/phone/:number",
     "/users",
 ];
 var validations = [
@@ -23,7 +23,8 @@ var urls = [
     "/users?q=test1",
     "/users/1?q=test1",
     "/users/1?q=test1",
-    "/users?filter=name&sort=-name"
+    "/users?filter=name&sort=-name",
+    "/users/1/phone/2?filter=name&sort=-name"
 ];
 class UrlToPattern{
 }
@@ -36,12 +37,12 @@ UrlToPattern.convert = (map)=>{
 
     pieces.forEach((p)=>{
         arrayPattern+="/";
-        if(/\$\{([a-zA-Z0-9]+)\}/.test(p)){
-            var field = p.replace("${","").replace("}","");
+        if(/:([a-zA-Z0-9]+)/.test(p)){
+            var field = p.replace(":","");
             pattern.fields.push(field);
         }
     });
-    var arrayPattern = "^"+map.replace(/\$\{([a-zA-Z0-9]+)\}/g,"([a-zA-Z0-9]+)")+"((/|\\\\?.*|/\\\\?.*|\\\\?)?)$";
+    var arrayPattern = "^"+map.replace(/:([a-zA-Z0-9]+)/g,"([a-zA-Z0-9]+)")+"(((\\/$|\\?|\\/\\?).*)?)$";
     pattern.regexp = new RegExp(arrayPattern);
     return pattern;
 }
@@ -54,7 +55,29 @@ class Parser{
     }
     parse(url,pattern){
         this.url = url;
-        this.pattern = pattern;
+        if(pattern){
+            this.pattern = pattern;
+        }else{
+            this.params = {};
+            var cont = 1;
+            var strPattern = "^";
+            url.replace(/\?.*$/,"").split("/").forEach((value,index)=>{
+                if(index>0){
+                    strPattern+="/";
+                    if(index%2===0){
+                        this.params["field"+cont] = value;
+                        cont++;
+                        strPattern+="([a-zA-Z0-9]+)";
+                    }else{
+                        strPattern+=value;
+                    }
+                }
+            });
+            //(((\/?)\?.*))$
+            strPattern = strPattern+"(((\\/$|\\?|\\/\\?).*)?)$";
+            this.pattern = new RegExp(strPattern);
+        }
+        
         return this;
     }
     parameters(){
@@ -99,12 +122,12 @@ describe("Parse URL",()=>{
             var p = UrlToPattern.convert(m);
             pattern.push(p);
         });
-        assert.equal(/^\/users\/([a-zA-Z0-9]+)((\/|\\?.*|\/\\?.*|\\?)?)$/.toString(),pattern[0].regexp.toString());
+        assert.equal(/^\/users\/([a-zA-Z0-9]+)(((\/$|\?|\/\?).*)?)$/.toString(),pattern[0].regexp.toString());
         assert.ok(pattern[0].regexp.test(validations[0]));
         assert.ok(pattern[0].regexp.test(validations[1]));
         assert.ok(pattern[0].regexp.test(validations[2]));
         expect(["id"]).to.have.members(pattern[0].fields);
-        assert.equal(/^\/users\/([a-zA-Z0-9]+)\/phone\/([a-zA-Z0-9]+)((\/|\\?.*|\/\\?.*|\\?)?)$/.toString(),pattern[1].regexp.toString());
+        assert.equal(/^\/users\/([a-zA-Z0-9]+)\/phone\/([a-zA-Z0-9]+)(((\/$|\?|\/\?).*)?)$/.toString(),pattern[1].regexp.toString());
         assert.ok(pattern[1].regexp.test(validations[3]));
         assert.ok(pattern[1].regexp.test(validations[4]));
         assert.ok(pattern[1].regexp.test(validations[5]));
@@ -119,6 +142,8 @@ describe("Parse URL",()=>{
         expect({filter:'name',sort:'-name'}).to.deep.equal(new Parser().parse(urls[5],pattern[2]).queryString());
         expect({id:'1'}).to.deep.equal(new Parser().parse(urls[3],pattern[0]).parameters());
         expect({q:'test1'}).to.deep.equal(new Parser().parse(urls[3],pattern[0]).queryString());
+        console.log(new Parser().parse(urls[3]));
+        console.log(new Parser().parse(urls[6]));
 
     });
 });
