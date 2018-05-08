@@ -7,6 +7,8 @@ var FormParameter = require('../controller/index').FormParameter;
 var Engine = require("../helpers/html.engine.helper");
 var Config = require('../config/index').Configuration;
 var BodyParser = require("../converters/index").BodyParser;
+var Parser = require("../parsers").Parser;
+var UrlToPattern = require("../parsers").UrlToPattern;
 
 export const SINGLETON_CLASS = "design:singleton";
 export const CONTROLLER_KEY = "design:class";
@@ -33,6 +35,11 @@ export function Controller(params:any){
 }
 var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
+        if(!target.patterns){
+            Object.defineProperty(target,"patterns",{value: [] });
+        }
+        target.patterns.push(UrlToPattern.convert(params.url ? params.url : params));
+
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
 
