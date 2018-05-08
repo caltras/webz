@@ -7,6 +7,7 @@ import { MethodWrapper } from './method.wrapper';
 import { LoginController } from '../controller/login.controller';
 import { LogoutController } from '../controller/logout.controller';
 import { I18nHelper } from "../i18n/i18n.helper";
+import { UrlToPattern } from "../parsers";
 
 export function parse(result:any,contentType:ContentType){
     if(contentType=== ContentType.APPLICATION_JSON){
@@ -121,7 +122,8 @@ export class ControllerHelper{
                 if(typeof(url) !="string"){
                     url=url.url;
                 }
-                this.route[k.toUpperCase()][url] = {class: target.name, method: method[m].method,name:method[m].name, target:target};
+                //this.route[k.toUpperCase()][url] = {class: target.name, method: method[m].method,name:method[m].name, target:target};
+                this.route[k.toUpperCase()][method[m].pattern.regexp.toString()] = {class: target.name, method: method[m].method,name:method[m].name, target:target};
             });
          });
     }
@@ -144,7 +146,8 @@ export class ControllerHelper{
                         url=url.url;
                     }
                     url = (instance.path+url).replace("//","/");
-                    let method = {target: target, method: instance[prop], name:prop, decorator_params:methods,url:url };
+                    
+                    let method = {target: target, method: instance[prop], name:prop, decorator_params:methods,url:url, pattern: UrlToPattern.convert(url)};
                     decorator.methods = decorator.methods || {};
                     decorator.methods[type.name] = decorator.methods[type.name] || {};
                     decorator.methods[type.name][url] = method;
@@ -170,17 +173,35 @@ export class ControllerHelper{
     public setReady(is:boolean){
         this.ready = is;
     }
+    private checkUrlPattern(method:any,urlRequest:string):string{
+        let key:string=null;
+        let cont:number=0;
+        _.forEach(this.route[method],(value,k)=>{
+            let id = k.toString().replace(/\\/g,"\\\\").substr(1);
+            let regexp = new RegExp(id);
+            if(regexp.test(urlRequest)){
+                key = id;
+                return false;
+            }else{
+                key=null;
+                regexp=null;
+            }
+        });
+        return key;
+    }
     public callRoute(req:any,resp:any, config?:any){
         new Promise((resolve,reject)=>{
             try{
                 if(!Object.keys(this.route[req.method]).length){
                     throw Error(`Page not found - ${req.method} - ${req.url}`);
                 }else{
-                    if(!this.route[req.method].hasOwnProperty(req.url)){
+                    let key:string = this.checkUrlPattern(req.method,req.url);
+                    if(!key){
                         throw Error(`Page not found - ${req.method} - ${req.url}`);
                     }else{
-                        let controller = this.route[req.method][req.url];                     
-                        let param = new MethodWrapper(controller.target,req,resp);
+                        let controller = this.route[req.method][key];
+                        let pattern = _.find(controller.target.patterns,(v)=> { return v.regexp.toString() === key; });                     
+                        let param = new MethodWrapper(controller.target,req,resp,pattern);
                         controller.method.call(controller.target,param);
                     }
                 }

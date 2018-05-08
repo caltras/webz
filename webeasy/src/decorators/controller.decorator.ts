@@ -1,6 +1,6 @@
 import "reflect-metadata";
 var http = require("http");
-
+var _ = require('lodash');
 var Helper = require('../helpers/controller.helper');
 var BodyParameter = require('../controller/index').BodyParameter;
 var FormParameter = require('../controller/index').FormParameter;
@@ -29,17 +29,24 @@ export function Controller(params:any){
         
         Reflect.defineMetadata(CONTROLLER_KEY,params,target);
         Reflect.defineMetadata(SINGLETON_CLASS,instance,target);
-        
+        if(target.prototype.actions){
+            target.prototype.actions.forEach((v:string)=>{
+                var pattern = UrlToPattern.convert(params.url ? params.url+v : params + v);
+                if(!target.patterns){
+                    Object.defineProperty(target,"patterns",{value: [] });
+                }
+                target.patterns.push(pattern);
+            });
+        }
         return target;
     }
 }
 var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
-        if(!target.patterns){
-            Object.defineProperty(target,"patterns",{value: [] });
+        if(!target.actions){
+            Object.defineProperty(target,"actions",{value: [] });
         }
-        target.patterns.push(UrlToPattern.convert(params.url ? params.url : params));
-
+        target.actions.push(params.url ? params.url : params);
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
 

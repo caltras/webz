@@ -30,7 +30,7 @@ export class Parser{
         this.fields = null;
         this.pattern=null;
     }
-    parse(url:string,pattern:RegExp){
+    parse(url:string,pattern:any){
         this.url = url;
         if(pattern){
             this.pattern = pattern;
@@ -52,7 +52,7 @@ export class Parser{
                 }
             });
             strPattern = strPattern+"(((\\/$|\\?|\\/\\?).*)?)$";
-            this.pattern = new RegExp(strPattern);
+            this.pattern = {fields:Object.keys(this.params), regexp: new RegExp(strPattern)};
         }
         
         return this;

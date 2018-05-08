@@ -18,7 +18,7 @@
     "serve-debug": "nodemon --inspect dist/index.js",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\"",
     "mocha": "node ./node_modules/mocha/bin/_mocha --recursive ./test/**/*.test.js",
-    "mocha-ts": "$(npm bin)/tsc ./test/*.test.ts"
+    "mocha-ts": "$(npm bin)/tsc ./test/*.test.ts && npm run mocha"
   },
   "author": "Claudio Traspadini Oliveira",
   "license": "ISC",
