@@ -31,7 +31,11 @@ export function Controller(params:any){
         Reflect.defineMetadata(SINGLETON_CLASS,instance,target);
         if(target.prototype.actions){
             target.prototype.actions.forEach((v:string)=>{
-                var pattern = UrlToPattern.convert(params.url ? params.url+v : params + v);
+                var url = (params.url ? params.url+v : params + v).replace("//","/");
+                if(url!=="/"){
+                    url = url.replace(/\/$/,"");
+                }
+                var pattern = UrlToPattern.convert(url);
                 if(!target.patterns){
                     Object.defineProperty(target,"patterns",{value: [] });
                 }

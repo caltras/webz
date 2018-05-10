@@ -89,7 +89,11 @@ export class FilterHelper{
             this.rootFilter.doFilter(req,resp);
             debug("Finishing process filter.");
         }else{
-            if(req.url === config.redirect.login && !!SessionHelper.getInstance().getAuthenticateUser(req)){
+            let redirect = config.redirect.login;
+            if(redirect!=="/"){
+                redirect = redirect.replace(/\/$/,"");
+            }
+            if(req.url === redirect && !!SessionHelper.getInstance().getAuthenticateUser(req)){
                 resp.writeHead(301,{
                     Location: (config.redirect.welcome)
                 });

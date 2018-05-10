@@ -123,7 +123,9 @@ export class ControllerHelper{
                     url=url.url;
                 }
                 //this.route[k.toUpperCase()][url] = {class: target.name, method: method[m].method,name:method[m].name, target:target};
-                this.route[k.toUpperCase()][method[m].pattern.regexp.toString()] = {class: target.name, method: method[m].method,name:method[m].name, target:target};
+                //let key = method[m].pattern.regexp.toString();
+                //let id = key.substr(1,key.toString().length-2);
+                this.route[k.toUpperCase()][m] = {class: target.name, method: method[m].method,name:method[m].name, target:target};
             });
          });
     }
@@ -146,11 +148,16 @@ export class ControllerHelper{
                         url=url.url;
                     }
                     url = (instance.path+url).replace("//","/");
-                    
+                    if(url!=="/"){
+                        url = url.replace(/\/$/,"");
+                    }
                     let method = {target: target, method: instance[prop], name:prop, decorator_params:methods,url:url, pattern: UrlToPattern.convert(url)};
                     decorator.methods = decorator.methods || {};
                     decorator.methods[type.name] = decorator.methods[type.name] || {};
-                    decorator.methods[type.name][url] = method;
+                    let key = method.pattern.regexp.toString();
+                    let id = key.substr(1,key.toString().length-2);
+                    decorator.methods[type.name][id] = method;
+                    //decorator.methods[type.name][url] = method;
                 }              
             });
 
@@ -176,11 +183,11 @@ export class ControllerHelper{
     private checkUrlPattern(method:any,urlRequest:string):string{
         let key:string=null;
         let cont:number=0;
-        _.forEach(this.route[method],(value,k)=>{
-            let id = k.toString().replace(/\\/g,"\\\\").substr(1);
-            let regexp = new RegExp(id);
+        var keys = Object.keys(this.route[method]).sort().reverse();
+        _.forEach(keys,(k)=>{
+            let regexp = new RegExp(k);
             if(regexp.test(urlRequest)){
-                key = id;
+                key = k;
                 return false;
             }else{
                 key=null;
@@ -200,7 +207,9 @@ export class ControllerHelper{
                         throw Error(`Page not found - ${req.method} - ${req.url}`);
                     }else{
                         let controller = this.route[req.method][key];
-                        let pattern = _.find(controller.target.patterns,(v)=> { return v.regexp.toString() === key; });                     
+                        let pattern = _.find(controller.target.patterns,(v)=> { 
+                            return v.regexp.toString().substr(1,v.regexp.toString().toString().length-2) === key; 
+                        });                     
                         let param = new MethodWrapper(controller.target,req,resp,pattern);
                         controller.method.call(controller.target,param);
                     }

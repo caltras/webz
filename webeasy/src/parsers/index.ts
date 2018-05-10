@@ -64,7 +64,7 @@ export class Parser{
             var matches = this.url.match(this.pattern.regexp);
             if(matches){
                 for(var i=0;i<this.pattern.fields.length;i++){
-                    this.params[this.pattern.fields[0]] = matches[cont];
+                    this.params[this.pattern.fields[i]] = matches[cont];
                     cont++;
                 }
             }

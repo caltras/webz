@@ -75,6 +75,10 @@ class HomeController extends BaseController{
     public homeParameters(request:Request,response:ServerResponse){
         return request.parameters.id;
     }
+    @Get("/:id/message/:name")
+    public homeParameters2(request:Request,response:ServerResponse){
+        return "Hello "+request.parameters.name+" #"+request.parameters.id;
+    }
 }
 
 module.exports = HomeController;

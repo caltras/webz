@@ -48,7 +48,11 @@ export class Security extends SecurityInterface{
                 this.isAuthenticate(request,response);
                 this.isAllowed(request,response);
             }else{
-                if(request.url === this.configurationHelper.getProperty("redirect").login){
+                let redirect = this.configurationHelper.getProperty("redirect").login;
+                if(redirect!=="/"){
+                    redirect = redirect.replace(/\/$/,"");
+                }
+                if(request.url === redirect){
                     response.writeHead(301,{
                         Location: (this.configurationHelper.getProperty("redirect").login)
                     });
