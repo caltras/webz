@@ -11,6 +11,7 @@ import * as debug from 'debug';
 import { FilterHelper } from "../helpers/filter.helper";
 import { I18nHelper } from "../i18n/i18n.helper";
 import { SecurityHelper } from "../helpers/security.helper";
+import { UrlToPattern } from "../parsers";
 
 export class SecurityException extends Error{
     constructor(msg:string){
@@ -52,7 +53,8 @@ export class Security extends SecurityInterface{
                 if(redirect!=="/"){
                     redirect = redirect.replace(/\/$/,"");
                 }
-                if(request.url === redirect){
+                let isLogin:boolean = UrlToPattern.convert(redirect).regexp.test(request.url);
+                if(isLogin){
                     response.writeHead(301,{
                         Location: (this.configurationHelper.getProperty("redirect").login)
                     });
