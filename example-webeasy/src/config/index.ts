@@ -1,14 +1,14 @@
 
 export default {
-    port:3002,
     base_url: "",
-    session:{
+    port: 3002,
+    session: {
         enabled:true,
     },
-    authentication:{
+    authentication: {
         tokenHandler:'security/token.authentication'
     },
-    filter:{
+    filter: {
         enabled:true,
         filters:[],
         security:{
