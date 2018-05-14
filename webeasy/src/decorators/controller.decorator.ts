@@ -1,12 +1,14 @@
 import "reflect-metadata";
 var http = require("http");
-
+var _ = require('lodash');
 var Helper = require('../helpers/controller.helper');
 var BodyParameter = require('../controller/index').BodyParameter;
 var FormParameter = require('../controller/index').FormParameter;
 var Engine = require("../helpers/html.engine.helper");
 var Config = require('../config/index').Configuration;
 var BodyParser = require("../converters/index").BodyParser;
+var Parser = require("../parsers").Parser;
+var UrlToPattern = require("../parsers").UrlToPattern;
 
 export const SINGLETON_CLASS = "design:singleton";
 export const CONTROLLER_KEY = "design:class";
@@ -27,12 +29,28 @@ export function Controller(params:any){
         
         Reflect.defineMetadata(CONTROLLER_KEY,params,target);
         Reflect.defineMetadata(SINGLETON_CLASS,instance,target);
-        
+        if(target.prototype.actions){
+            target.prototype.actions.forEach((v:string)=>{
+                var url = (params.url ? params.url+v : params + v).replace("//","/");
+                if(url!=="/"){
+                    url = url.replace(/\/$/,"");
+                }
+                var pattern = UrlToPattern.convert(url);
+                if(!target.patterns){
+                    Object.defineProperty(target,"patterns",{value: [] });
+                }
+                target.patterns.push(pattern);
+            });
+        }
         return target;
     }
 }
 var processRequest = (params:any,type:any)=>{
     return function(target:any, propertyKey: string, descriptor: PropertyDescriptor){
+        if(!target.actions){
+            Object.defineProperty(target,"actions",{value: [] });
+        }
+        target.actions.push(params.url ? params.url : params);
         var classConstructor = target.constructor;
         var originalMethod = descriptor.value;
 

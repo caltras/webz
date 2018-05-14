@@ -5,6 +5,7 @@ import * as filterDebug from 'debug';
 import { ServerRequest, ServerResponse } from 'http';
 import * as Lodash from 'lodash';
 import { SessionHelper } from './session.helper';
+import { UrlToPattern } from '../parsers';
 
 const debug = filterDebug("filter");
 
@@ -89,7 +90,12 @@ export class FilterHelper{
             this.rootFilter.doFilter(req,resp);
             debug("Finishing process filter.");
         }else{
-            if(req.url === config.redirect.login && !!SessionHelper.getInstance().getAuthenticateUser(req)){
+            let redirect = config.redirect.login;
+            if(redirect!=="/"){
+                redirect = redirect.replace(/\/$/,"");
+            }
+            let isLogin:boolean = UrlToPattern.convert(redirect).regexp.test(req.url);
+            if(isLogin && !!SessionHelper.getInstance().getAuthenticateUser(req)){
                 resp.writeHead(301,{
                     Location: (config.redirect.welcome)
                 });

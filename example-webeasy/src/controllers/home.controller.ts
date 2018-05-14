@@ -1,4 +1,4 @@
-import { BaseController, BodyParameter, FormParameter } from "webeasy/controller";
+import { BaseController, BodyParameter, FormParameter, Request, Response } from "webeasy/controller";
 import { ContentType } from "webeasy/helpers/controller.helper";
 import { Controller, Get, Post, Put, Delete, Options, Inject } from 'webeasy/decorators';
 import { IncomingMessage, ServerResponse, ServerRequest } from 'http';
@@ -69,6 +69,15 @@ class HomeController extends BaseController{
     public customOption(request:IncomingMessage,response:ServerResponse){
         console.log("OPTIONS");
         response.setHeader("X-Test","true");
+    }
+
+    @Get("/:id")
+    public homeParameters(request:Request,response:ServerResponse){
+        return request.parameters.id;
+    }
+    @Get("/:id/message/:name")
+    public homeParameters2(request:Request,response:ServerResponse){
+        return "Hello "+request.parameters.name+" #"+request.parameters.id;
     }
 }
 
