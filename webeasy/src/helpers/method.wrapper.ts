@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import { Parser } from '../parsers';
 import { Request, Response } from '../controller';
+import {SessionHelper} from '../helpers/session.helper';
 
 export class MethodWrapper{
     private clazz:any;
@@ -15,6 +16,7 @@ export class MethodWrapper{
         let p:Parser = new Parser().parse(this.req.url,this.pattern);
         this.req.parameters = p.parameters();
         this.req.query = p.queryString();
+        this.req.session = SessionHelper.getInstance().getSession(request);
     }
     get response(){
         return this.resp;
