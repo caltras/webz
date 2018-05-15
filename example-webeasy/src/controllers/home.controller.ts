@@ -8,6 +8,7 @@ import * as Path from 'path';
 import {SessionHelper} from 'webeasy/helpers/session.helper';
 import { User } from 'webeasy/security/user';
 import { Security, SecurityAttribute } from 'webeasy/decorators/security.decorator';
+import * as _ from 'lodash';
 
 @Controller("/")
 class HomeController extends BaseController{
@@ -73,7 +74,11 @@ class HomeController extends BaseController{
 
     @Get("/:id")
     public homeParameters(request:Request,response:ServerResponse){
-        return request.parameters.id;
+        return _.map(request.parameters,(v:any,k:string)=>{
+            return k+"="+v;
+        }) +"<br>"+_.map(request.query,(v:any,k:string)=>{
+            return k+"="+v;
+        });
     }
     @Get("/:id/message/:name")
     public homeParameters2(request:Request,response:ServerResponse){
